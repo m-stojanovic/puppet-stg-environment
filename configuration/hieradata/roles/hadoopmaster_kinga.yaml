@@ -1,0 +1,540 @@
+---
+# Custom hadoop parameteres for kinga cluster master node
+hadoop::config::yarn_nodemanager_resource_memory_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: '400'
+
+collectd::plugin::genericjmx::connection:
+  hbase:
+    host: "%{hostname}"
+    service_url: 'service:jmx:rmi:///jndi/rmi://localhost:10101/jmxrmi'
+    collect: ['hbase_garbage_collector','hbase_threading','hbase_uptime','hbase_jvm_metrics']
+  namenode:
+    host: "%{hostname}"
+    service_url: 'service:jmx:rmi:///jndi/rmi://localhost:8004/jmxrmi'
+    collect: ['namenode_garbage_collector','namenode_threading','namenode_uptime','namenode_jvm_metrics','namenode_fs_namesystem','namenode_activity','namenode_info']
+
+collectd::plugin::genericjmx::mbean:    
+  hbase_garbage_collector:
+    object_name: java.lang:type=GarbageCollector,*
+    instance_prefix: hbase_gc-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: invocations,
+          instance_prefix: collection_count,
+          table:  false,
+          attribute: CollectionCount,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: collection_time,
+          table:  false,
+          attribute: CollectionTime,
+        }
+  hbase_jvm_metrics:
+    object_name: Hadoop:service=HBase,name=JvmMetrics
+    instance_prefix: hbase_jvm_metrics
+    values:  
+      - { 
+          mbean_type: gauge,
+          instance_prefix: logged_warns,
+          table:  false,
+          attribute: LogWarn,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_fatals,
+          table:  false,
+          attribute: LogFatal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_errors,
+          table:  false,
+          attribute: LogError,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_commited,
+          table:  false,
+          attribute: MemHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_used,
+          table:  false,
+          attribute: MemHeapUsedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_max,
+          table:  false,
+          attribute: MemHeapMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_max,
+          table:  false,
+          attribute: MemMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_commited,
+          table:  false,
+          attribute: MemNonHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_used,
+          table:  false,
+          attribute: MemNonHeapUsedM,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_blocked,
+          table:  false,
+          attribute: ThreadsBlocked,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_new,
+          table:  false,
+          attribute: ThreadsNew,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_runnable,
+          table:  false,
+          attribute: ThreadsRunnable,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_terminated,
+          table:  false,
+          attribute: ThreadsTerminated,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting_timed_out,
+          table:  false,
+          attribute: ThreadsTimedWaiting,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting,
+          table:  false,
+          attribute: ThreadsWaiting,
+        }
+  hbase_threading:
+    object_name: java.lang:type=Threading
+    instance_prefix: hbase_threading
+    values:
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_cpu_time,
+          table:  false,
+          attribute: CurrentThreadCpuTime,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_user_time,
+          table:  false,
+          attribute: CurrentThreadUserTime,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: daemon_thread_count,
+          table:  false,
+          attribute: DaemonThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: peak_thread_count,
+          table:  false,
+          attribute: PeakThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: thread_count,
+          table:  false,
+          attribute: ThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: total_started_thread_count,
+          table:  false,
+          attribute: TotalStartedThreadCount,
+        }
+  hbase_uptime:
+    object_name: java.lang:type=Runtime
+    instance_prefix: hbase_runtime
+    values:  
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: uptime,
+          table:  false,
+          attribute: Uptime,
+        }
+  namenode_activity:
+    object_name: Hadoop:service=NameNode,name=NameNodeActivity
+    instance_prefix: namenode_activity
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_file_create,
+          table:  false,
+          attribute: CreateFileOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_file_delete,
+          table:  false,
+          attribute: DeleteFileOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_file_info,
+          table:  false,
+          attribute: FileInfoOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_file_get,
+          table:  false,
+          attribute: GetListingOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_file_list,
+          table:  false,
+          attribute: FilesInGetListingOps,
+        }
+      - { 
+          mbean_type: gauge,
+          instance_prefix: ops_file_total,
+          table:  false,
+          attribute: TotalFileOps,
+        }
+      - { 
+          mbean_type: gauge,
+          instance_prefix: ops_journal_sync,
+          table:  false,
+          attribute: SyncsNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: ops_journal_transaction,
+          table:  false,
+          attribute: TransactionsNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: files_created,
+          table:  false,
+          attribute: FilesCreated,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: files_deleted,
+          table:  false,
+          attribute: FilesDeleted,
+        }
+      - { 
+          mbean_type: gauge,
+          instance_prefix: files_renamed,
+          table:  false,
+          attribute: FilesRenamed,
+        }
+  namenode_fs_namesystem:
+    object_name: Hadoop:service=NameNode,name=FSNamesystem
+    instance_prefix: namenode_fs_namesystem
+    values:
+      - {  
+          mbean_type: gauge,
+          instance_prefix: blocks_capacity,
+          table:  false,
+          attribute: BlockCapacity,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_total,
+          table:  false,
+          attribute: BlocksTotal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: capacity_remaining,
+          table:  false,
+          attribute: CapacityRemaining,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: capacity_used,
+          table:  false,
+          attribute: CapacityUsed,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: capacity_total,
+          table:  false,
+          attribute: CapacityTotal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: files_total,
+          table:  false,
+          attribute: FilesTotal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: load_total,
+          table:  false,
+          attribute: TotalLoad,
+        }
+  namenode_garbage_collector:
+    object_name: java.lang:type=GarbageCollector,*
+    instance_prefix: namenode_gc-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: invocations,
+          instance_prefix: collection_count,
+          table:  false,
+          attribute: CollectionCount,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: collection_time,
+          table:  false,
+          attribute: CollectionTime,
+        }
+  namenode_info:
+    object_name: Hadoop:service=NameNode,name=NameNodeInfo
+    instance_prefix: namenode_info
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: non_dfs_space_used,
+          table:  false,
+          attribute: NonDfsUsedSpace,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_pool_used_percent,
+          table:  false,
+          attribute: PercentUsed,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_pool_free_percent,
+          table:  false,
+          attribute: PercentRemaining,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_pool_used_bytes,
+          table:  false,
+          attribute: Used,
+        }
+      - { 
+          mbean_type: gauge,
+          instance_prefix: block_pool_free_bytes,
+          table:  false,
+          attribute: Free,
+        }
+  namenode_jvm_metrics:
+    object_name: Hadoop:service=NameNode,name=JvmMetrics
+    instance_prefix: namenode_jvm_metrics
+    values:
+      - { 
+          mbean_type: gauge,
+          instance_prefix: logged_warns,
+          table:  false,
+          attribute: LogWarn,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_fatals,
+          table:  false,
+          attribute: LogFatal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_errors,
+          table:  false,
+          attribute: LogError,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_commited,
+          table:  false,
+          attribute: MemHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_used,
+          table:  false,
+          attribute: MemHeapUsedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_max,
+          table:  false,
+          attribute: MemHeapMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_max,
+          table:  false,
+          attribute: MemMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_commited,
+          table:  false,
+          attribute: MemNonHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_used,
+          table:  false,
+          attribute: MemNonHeapUsedM,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_blocked,
+          table:  false,
+          attribute: ThreadsBlocked,
+        }
+      - { 
+          mbean_type: threads,
+          instance_prefix: threads_new,
+          table:  false,
+          attribute: ThreadsNew,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_runnable,
+          table:  false,
+          attribute: ThreadsRunnable,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_terminated,
+          table:  false,
+          attribute: ThreadsTerminated,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting_timed_out,
+          table:  false,
+          attribute: ThreadsTimedWaiting,
+        }
+      - { 
+          mbean_type: threads,
+          instance_prefix: threads_waiting,
+          table:  false,
+          attribute: ThreadsWaiting,
+        }
+  namenode_threading:
+    object_name: java.lang:type=Threading
+    instance_prefix: namenode_threading
+    values:
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_cpu_time,
+          table:  false,
+          attribute: CurrentThreadCpuTime,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_user_time,
+          table:  false,
+          attribute: CurrentThreadUserTime,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: daemon_thread_count,
+          table:  false,
+          attribute: DaemonThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: peak_thread_count,
+          table:  false,
+          attribute: PeakThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: thread_count,
+          table:  false,
+          attribute: ThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: total_started_thread_count,
+          table:  false,
+          attribute: TotalStartedThreadCount,
+        }
+  namenode_uptime:
+    object_name: java.lang:type=Runtime
+    instance_prefix: namenode_runtime
+    values:  
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: uptime,
+          table:  false,
+          attribute: Uptime,
+        }
+
+collectd::plugin::curl_json:
+  yarn_cluster_metrics:
+    url: "http://%{hostname}:50060/ws/v1/cluster/metrics"
+    instance: 'yarn-cluster-metrics'
+    keys:
+      'clusterMetrics/totalMB':
+        type: gauge
+        instance: ram_mb_total
+      'clusterMetrics/reservedMB':
+        type: gauge
+        instance: ram_mb_reserved
+      'clusterMetrics/availableMB':
+        type: gauge
+        instance: ram_mb_available
+      'clusterMetrics/allocatedMB':
+        type: gauge
+        instance: ram_mb_allocated
+      'clusterMetrics/appsSubmitted':
+        type: gauge
+        instance: apps_submitted
+      'clusterMetrics/appsCompleted':
+        type: gauge
+        instance: apps_completed
+      'clusterMetrics/appsPending':
+        type: gauge
+        instance: apps_pending
+      'clusterMetrics/appsRunning':
+        type: gauge
+        instance: apps_running
+      'clusterMetrics/availableVirtualCores':
+        type: gauge
+        instance: vcores_available
+      'clusterMetrics/reservedVirtualCores':
+        type: gauge
+        instance: vcores_reserved
+      'clusterMetrics/totalVirtualCores':
+        type: gauge
+        instance: vcores_total
+      'clusterMetrics/allocatedVirtualCores':
+        type: gauge
+        instance: vcores_allocated
+      'clusterMetrics/containersAllocated':
+        type: gauge
+        instance: containers_allocated
+      'clusterMetrics/containersReserved':
+        type: gauge
+        instance: containers_reserved
+      'clusterMetrics/containersPending':
+        type: gauge
+        instance: containers_pending

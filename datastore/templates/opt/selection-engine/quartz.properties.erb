@@ -1,0 +1,21 @@
+org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreTX
+org.quartz.jobStore.tablePrefix = QRTZ_
+org.quartz.jobStore.dataSource = pgds
+org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+org.quartz.threadPool.class = org.quartz.simpl.SimpleThreadPool
+org.quartz.dataSource.pgds.driver = org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+org.quartz.scheduler.instanceName = <%= @variables['schedulerName'] %>
+org.quartz.scheduler.instanceId = AUTO
+org.quartz.jobStore.isClustered = true
+org.quartz.threadPool.threadCount = <%= @variables['threadCount'] %>
+<% @quartz['connection'].each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+
+##required params:
+#org.quartz.threadPool.threadCount
+#org.quartz.dataSource.pgds.URL
+#org.quartz.dataSource.pgds.user
+#org.quartz.dataSource.pgds.password
+#org.quartz.dataSource.pgds.maxConnections
+#org.quartz.jobStore.clusterCheckinInterval

@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<property>
+		<name>hbase.cluster.distributed</name>
+		<value>true</value>
+		<description>
+			The mode the cluster will be in. Possible values are:
+			false: standalone and pseudo-distributed setups with managed Zookeeper
+			true: fully-distributed with unmanaged Zookeeper Quorum (see hbase-env.sh)
+		</description>
+	</property>
+	<property>
+		<name>hbase.rootdir</name>
+		<value>hdfs://<%= @master_cluster_dfs %>/hbase</value>
+		<description>
+			The directory shared by region servers.
+		</description>
+	</property>
+	<property>
+		<name>hbase.hregion.max.filesize</name>
+		<value>1610612736</value>
+		<description>
+			Maximum HStoreFile size. Hbase books recommends 1GB. we increased to 1.5 for cdh4
+		</description>
+	</property>
+	<property>
+		<name>hbase.regionserver.hlog.blocksize</name>
+		<value>67108864</value>
+		<description>
+			Block size for HLog files. To minimize potential data loss,
+			the size should be (avg key length) * (avg value length) * flushlogentries.
+			Default 1MB.
+			increase to 64 because of: https://issues.apache.org/jira/browse/HBASE-1394
+		</description>
+	</property>
+	<property>
+		<name>hfile.block.cache.size</name>
+		<value>0.20</value>
+		<description>
+			Percentage of maximum heap (-Xmx setting) to allocate to
+			block cache used by HFile/StoreFile. Default of 0.2 means
+			allocate 20%. Set to 0 to disable. Together with other cache(40%) cannot exceed 80%
+			gc settings -XX:CMSInitiatingOccupancyFraction=70 must be higher
+		</description>
+	</property>
+	<property>
+		<name>hbase.zookeeper.quorum</name>
+		<value><%= scope['hbase::hd_zookeeper_list'] %></value>
+	</property>
+	<property>
+		<name>hbase.zookeeper.peerport</name>
+		<value><%= scope['hbase::hd_zookeeper_peerport'] %></value>
+		<description>
+			Port used by ZooKeeper peers to talk to each other.
+			See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+			for more information.
+		</description>
+	</property>
+	<property>
+		<name>hbase.zookeeper.leaderport</name>
+		<value><%= scope['hbase::hd_zookeeper_leaderport'] %></value>
+		<description>
+			Port used by ZooKeeper for leader election.
+			See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+			for more information.
+		</description>
+	</property>
+	<property>
+		<name>hbase.zookeeper.property.clientPort</name>
+		<value><%= scope['hbase::hd_zookeeper_clientport'] %></value>
+		<description>
+			Property from ZooKeeper's config zoo.cfg.
+			The port at which the clients will connect.
+		</description>
+	</property>
+  <% if @zookeeper_znode_parent %>
+	<property>
+		<name>zookeeper.znode.parent</name>
+		<value><%= @zookeeper_znode_parent %></value>
+		<description>
+			znode under which hbase will register.
+		</description>
+	</property>
+  <% end %>
+	<property>
+		<name>zookeeper.session.timeout</name>
+		<value>60000</value>
+	</property>
+	<property>
+		<name>hbase.hregion.memstore.mslab.enabled</name>
+		<value>false</value>
+		<description>
+			allow contingent blocks of memory in tenured mem space to prevent world stopping mem compactions
+			disabled after first test produced an OutOfMemory that may have been caused by this. will be
+			turned on by default in 0.92...
+
+                        MSLAB requires 2mb per memstore (that's 2mb per family per region). 1000 regions that have 2 families 
+                        each is 3.9GB of heap used, and it's not even storing data yet. NB: the 2MB value is configurable. .
+                        So we need to keep it off....
+		</description>
+	</property>
+	<property>
+		<name>hbase.regionserver.global.memstore.upperLimit</name>
+		<value>0.2</value>
+	</property>
+	<property>
+		<name>hbase.regionserver.global.memstore.lowerLimit</name>
+		<value>0.15</value>
+	</property>
+	<property>
+		<name>hbase.regionserver.handler.count</name>
+		<value>150</value>
+                <description>increased from 150 to 200 for more responsivness (temp down to 150 to overcome issues)</description>
+	</property>
+	<property>
+		<name>hbase.coprocessor.region.classes</name>
+		<value><%= @coprocessor_classes.join(',') %></value>
+	</property>
+	<!-- Addition 13/09/2013 for new EMC cloud --> 
+	<property>
+		<name>hbase.master.wait.on.regionservers.mintostart</name>
+		<value><%= @min_regionservers_to_start %></value>
+	</property>
+	<property>
+		<name>fail.fast.expired.active.master</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>hbase.zookeeper.useMulti</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>hbase.hregion.majorcompaction</name>
+		<value>0</value>
+	</property>
+	<property>
+		<name>hbase.snapshot.enabled</name>
+		<value>true</value>
+	</property>
+	<!-- END - Addition 13/09/2013 for new EMC cloud -->
+	<!-- 18/09/2013 Adding slop and changing value of handler counters + offpeak balancing -->
+	<property>
+		<name>hbase.regions.slop</name>
+		<value>0.1</value>
+		<description>Rebalance if any regionserver has average + (average * slop) regions.
+			 Default is 20% slop.
+		</description>
+  </property>
+  <!-- 05/11/2014 Added to improve compaction -->
+  <property>
+    <name>hbase.hregion.memstore.flush.size</name>
+    <value>268435456</value>
+    <description>
+      Memstore will be flushed to disk if size of the memstore
+      exceeds this number of bytes. Value is checked by a thread that runs
+      every hbase.server.thread.wakefrequency.
+    </description>
+  </property>
+
+	<% if @compactions_offpeak_enable -%>
+    <property>
+		<name>hbase.hstore.compaction.ratio.offpeak</name>
+		<value>3</value>
+		<description>Ratio boost for offpeak compactions (vs. r = 1.2 inpeak). Down to 3 from default of 5. </description>
+	</property>
+	<property>
+		<name>hbase.offpeak.start.hour</name>
+		<value><%= @compactions_offpeak_start_hour %></value>
+	</property>
+	<property>
+		<name>hbase.offpeak.end.hour</name>
+		<value><%= @compactions_offpeak_end_hour %></value>
+	</property>
+	<% end -%>
+	<!-- END - 18/09/2013 Adding slop and changing value of handler counters + offpeak balancing -->
+	<!-- Increased from 32 to support batch jobs-->
+	<property>
+		<name>hbase.mapreduce.bulkload.max.hfiles.perRegion.perFamily</name>
+		<value>128</value>
+	</property>
+
+</configuration>

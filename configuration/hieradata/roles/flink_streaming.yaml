@@ -1,0 +1,876 @@
+---
+# webtrekk-trustore
+profiles::baseprofile::packages:
+  webtrekk-truststore-public:
+    version: 1.0.0-1
+    pin: true
+
+# Custom flink config
+flink::state_backend_checkpointdir: hdfs://dsstg1cluster/user/flink/flink-checkpoints
+flink::savepoints_state_backend_fs_dir: hdfs://dsstg1cluster/user/flink/flink-savepoints
+
+# nrpe specific for flink apps
+profiles::nrpe::checks:
+  'check_flink_elasticsearch-user':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_elasticsearch-user prime "elasticsearch-user-prime"
+  'check_flink_elasticsearch-user-bigtenants':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_elasticsearch-user bigtenants "elasticsearch-user-prime-bigtenants"
+  'check_flink_event-engine':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_event-engine default "event-engine"
+  'check_flink_hbase':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase default "HBase-Userprofile"
+  'check_flink_hbase-userresponse':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-userresponse default "HBase-Userresponse"
+  'check_flink_hbase-mobileresponses':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-mobileresponses default "HBase-MobileResponse"
+  'check_flink_hbase-statistics_regular':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-statistics regular "HBase-Statistics-Activity"
+  'check_flink_hbase-statistics_recovery':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-statistics recovery "HBase-Statistics-Recovery"
+  'check_flink_hbase-statistics_sendout':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-statistics sendout "HBase-Statistics-Sendout"
+  'check_flink_interaction-planner-statistics':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_interaction-planner default "interaction-planner-statistics"
+  'check_flink_locking-injection':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_locking-injection default "HBase-Locking"
+  'check_flink_relateddata_hbase':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_relateddata hbase "relateddata-hbase"
+  'check_flink_relateddata_elastic':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_relateddata elastic "Elastic-Relateddata"
+  'check_flink_rq_writer':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_rq_writer default "rq_cassandra_writer"
+  'check_flink_phone-hbase':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_phone-hbase default "phonedata-hbase"
+  'check_flink_mct_processor':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_mct_processor default "mapp-connect-processor"
+  'check_flink_dmp':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_dmp default "dmp-events"
+  'check_flink_kafka-reloader':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_kafka-reloader default "flink_kafka-reloader"
+  'check_flink_webtrekk-segment':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_webtrekk-segment default "webtrekk-segment"
+  'check_flink_product-catalog':
+    ensure: present
+    sudo: true
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh flink_hbase-product-catalog default "HBase-Productcatalog"
+  'check_yarn_resourcemanager':
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a yarn-resourcemanager
+
+# flink packages
+flink::packages:
+  flink:
+    ensure: '1.9.2-2'
+  flink-metrics-libs:
+    ensure: '0.0.4'
+
+# flink applications
+flink::applications::type: 'streaming'
+flink::applications::defaults:
+  checkpointing_interval: 10000
+  checkpointing_mode: 'EXACTLY_ONCE'
+  checkpointing_pause: 60000
+  checkpointing_timeout: 1200000
+  ds_schema_registry_path: '/services/registry'
+  elasticsearch_nodes: "%{alias('es::nodes')}"
+  elasticsearch_http_port: "%{hiera('es::http_port')}"
+  flink_time_window_ms: 1000
+  hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+  kafka_nodes: "%{alias('kafka::brokers')}"
+  kafka_broker_port: "%{hiera('kafka::broker_port')}"
+  zookeeper_quorum: "%{alias('zookeeper::quorumsrv.hadoop')}"
+  zookeeper_port: "%{hiera('zookeeper::ports.hadoop.clientport')}"
+  services_znodes:
+    userresponseevent: '/services/userresponseevent'
+flink::applications::list:
+  event-engine:
+    package: 'event-engine-flink'
+    version: '0.3.22'
+    configfiles:
+      '/opt/event-engine-flink/conf/config.yml':
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.pause: 180000
+        collocation.DEFAULT.destination.topic: 'ee-cep-actions-stg-eu'
+        collocation.DEFAULT.ignore.sysname: 'false'
+        collocation.DEFAULT.name: 'STG-EU'
+        collocation.DEFAULT.url: 'https://cook.shortest-route.com'
+        collocation.A.name: 'STG-US'
+        collocation.A.url: 'https://aldrin.shortest-route.com'
+        collocation.A.ignore.sysname: 'false'
+        collocation.A.destination.topic: 'ee-cep-actions-stg-us'
+        connection.timeout: 5000
+        dmc.rule.path: '/services/dmc/eventaction/rules'
+        flink.aggregate.actions.cep.parallelism: 4
+        flink.aggregate.best.sendout.parallelism: 4
+        flink.aggregate.event.parallelism: 4
+        flink.best.sendout.time.parallelism: 4
+        flink.mapping.matching.result.to.aggregable.parallelism: 2
+        flink.best.sendout.time.window.ms: 30000
+        flink.best.sendout.max.elements: 500
+        flink.best.sendout.time.on: true
+        flink.filter.invalid.event.parallelism: 2
+        flink.mapping.action.to.aggregable.parallelism: 2
+        flink.mapping.action.to.scheduled.parallelism: 2
+        flink.mapping.matching.result.to.action.parallelism: 2
+        flink.mapping.record.to.action: 2
+        flink.mapping.record.to.event: 2
+        flink.matching.parallelism: 2
+        flink.merge.streams.parallelism: 2
+        flink.sink.kafka.azkaban.parallelism: 2
+        flink.sink.kafka.cep.parallelism: 2
+        flink.sink.kafka.failed.events.parallelism: 2
+        flink.sink.kafka.service.parallelism: 2
+        flink.source.action.parallelism: 2
+        flink.source.event.parallelism: 2
+        flink.time.window.ms: 5000
+        group.id: 'event-engine-flink-stg'
+        max.elements: 100
+        redis.block.when.pool.exhausted: 'true'
+        redis.connection.timeout: 5000
+        redis.master.port: 6380
+        redis.master.url: 'event-engine-stg-lb.muc.domeus.com'
+        redis.max.connections: 20
+        redis.max.wait.millis: 1000
+        redis.retry.count: 3
+        redis.retry.interval: 500
+        redis.rules.expiration.time.in.seconds: 33
+        redis.slave.port: 6381
+        redis.slave.url: 'event-engine-stg-lb.muc.domeus.com'
+        restart.strategy: 'fixed-delay'
+        restart.strategy.fixed.delay.attempts: 10
+        restart.strategy.fixed.delay.delay: '30s'
+        scheduling.service.target.id: 'KAFKA_ACTIONS_ENDPOINT'
+        schema.registry.path: '/schema_registry/schema_registry_master'
+        secret.key: '5qs3ihc91hwpz82acvi21gt1dfc5dgw9'
+        socket.timeout: 15000
+        topic.destination.azkaban: 'ee-azkaban-actions'
+        topic.destination.failed.events: 'ee-failed-matching'
+        topic.destination.scheduling.service: 'ee-scheduled-entities'
+        topic.source.action: 'ee-actions'
+        topic.source.event: 'ee-events'
+  interaction-planner:
+    package: 'interaction-planner-flink'
+    version: '0.0.11'
+    configfiles:
+      '/opt/interaction-planner-flink/conf/config.yml':
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        collocations.DEFAULT.name: 'STG-EU'
+        collocations.DEFAULT.interactionplanner.db.username: 'intplanner'
+        collocations.DEFAULT.interactionplanner.db.password: "%{alias('secrets::flink::interaction-planner::default_db_password')}"
+        collocations.DEFAULT.interactionplanner.db.hostname: '10.128.251.204'
+        collocations.DEFAULT.interactionplanner.db.port: 3306
+        collocations.DEFAULT.interactionplanner.db.dbname: 'intplannertestlab'
+        collocations.DEFAULT.interactionplanner.db.additionalConnectionParams: '?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true'
+        connection.timeout: 5000
+        group.id: 'interaction-planner-flink-stg'
+        flink.aggregate.event.parallelism: 3
+        flink.filter.invalid.event.parallelism: 3
+        flink.mapping.record.to.event: 3
+        flink.sink.db.interactionplanner.parallelism: 3
+        flink.source.event.parallelism: 3
+        flink.time.window.ms: 60000
+        max.elements: 1000
+        schema.registry.path: '/schema_registry/schema_registry_master'
+        socket.timeout: 5000
+        topic.source.event: 'interaction-planner-statistics'
+  locking-injection:
+    package: 'speedlayer-flink-locking-injection'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-locking-injection/conf/config.yml':
+        auto.offset.reset: 'latest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        flink.sink.parallelism: 1
+        flink.source.parallelism: 1
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.locking.table.name: 'process'
+  mobile-statistics:
+    package: 'speedlayer-flink-mobile-statistics'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-mobile-statistics/conf/config.yml':
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        flink.time.window.ms: "%{hiera('flink::applications::defaults.flink_time_window_ms')}"
+        flink.process.parallelism: 2
+        flink.sink.parallelism: 2
+        flink.source.parallelism: 2
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.stats.table.name: 'mobilestats-speed-0'
+        hbase.stats.family.name: 'stats'
+        hbase.marker.table.name: 'mobilestats-marker-0'
+        hbase.marker.family.name: 'markers'
+        hbase.push.stats.table.name: 'pushstats-speed-0'
+        hbase.push.stats.family.name: 'stats'
+        hbase.push.marker.table.name: 'pushstats-marker-0'
+        hbase.push.marker.family.name: 'markers'
+  relateddata-elastic:
+    package: 'speedlayer-flink-relateddata-elastic'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-relateddata-elastic/conf/config.yml':
+        group.id: test_elastic_rd
+        bulk.flush.interval.ms: 5000
+        bulk.flush.max.actions: 1000
+        hbase.auto.flush: 'true'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.timeout: 7200000
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        flink.time.window.ms: 200
+        flink.source.parallelism: 4
+        flink.process.parallelism: 4
+        flink.sink.parallelism: 4
+        auto.offset.reset: 'latest'
+        locking.flush.interval.seconds: 1
+        customer.blacklist: 
+        index.autocreate.numberofshards: 5
+        index.autocreate.numberofreplicas: 1
+        index.routing.include.key: disk_type
+        index.routing.include.value: ssd
+        index.routing.exclude.key: disk_type
+        index.routing.exclude.value: kubernetes
+  relateddata-hbase:
+    package: 'speedlayer-flink-relateddata-hbase'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-relateddata-hbase/conf/config.yml':
+      #latest just for first run - after that back to earliest
+        auto.offset.reset: 'latest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        checkpointing.timeout: "%{hiera('flink::applications::defaults.checkpointing_timeout')}"
+        flink.time.window.ms: 200
+        flink.source.parallelism: 4
+        flink.process.parallelism: 4
+        flink.sink.parallelism: 4
+        locking.fold.parallelism: 4
+        locking.sink.parallelism: 4
+        locking.flush.interval.seconds: 1
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.table.name: 'relateddata-speed-0'
+        hbase.wishlist.table.name: 'wishlist-speed-0'
+        customer.whitelist.path.enable: true
+        customer.whitelist.path: '/mds/snapshots/rd_whitelist.conf'
+        customer.whitelist: ''
+        name: 'relateddata-hbase'
+      '/opt/speedlayer-flink-relateddata-hbase/conf/config_tmp.yml':
+        auto.offset.reset: 'latest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        checkpointing.timeout: "%{hiera('flink::applications::defaults.checkpointing_timeout')}"
+        flink.time.window.ms: 200
+        flink.process.parallelism: 4
+        flink.sink.parallelism: 4
+        flink.source.parallelism: 4
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.table.name: 'relateddata-speed-0'
+        locking.enabled: false
+        name: 'relateddata-hbase-tmp'
+  statistics:
+    package: 'speedlayer-flink-statistics'
+    version: '2.1.10-1'
+    configfiles:
+      '/opt/speedlayer-flink-statistics/conf/config.yml':
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: '60000'
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        checkpointing.timeout: 1800000
+        checkpointing.failOnCheckpointingErrors: 'false'
+        flink.source.parallelism: 4
+        flink.process.parallelism: 16
+        flink.sink.parallelism: 16
+        flink.kafka.sink.parallelism: 4
+        flink.responses.reorder.enabled: 'true'
+        flink.stats.calculation.ignored.responseTypes: 'sendout,sendout_with_coupons,assigned_conversion'
+        flink.stats.markers.results.max: 1000
+        flink.stats.markers.versions: 100
+        time.window.marker: 5000
+        time.window.stats: 10000
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.conversionstats.table.name: 'flink-statistics-conversion-0'
+        hbase.marker.table.name: 'flink-statistics-marker-0'
+        hbase.stats.table.name: 'flink-statistics-counters-0'
+        hbase.domainstats.table.name: 'flink-statistics-domain-0'
+        hbase.stats.flow.type: 'activity'
+        response.assign.conversions: 'true'
+        datastore.user.response.write.config: 'withCircuitBreaker = false, client { maxRetries = 3, thriftMux = true, workerThreads = 100, workerThreadPoolBufferSize = 100, checkServiceAvailability = false }, processing { timeout = 3.seconds }, recovery { fileDir = "/tmp/datastore/speedlayer-flink-statistics/minute/userResponse-4care", period = 1.minute, threads = 50 }'
+      '/opt/speedlayer-flink-statistics/conf/config-recovery.yml':
+        auto.offset.reset: 'latest'
+        checkpointing.interval: '60000'
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        checkpointing.timeout: 1800000
+        checkpointing.failOnCheckpointingErrors: 'false'
+        flink.source.recovery.parallelism: 4
+        flink.process.parallelism: 8
+        flink.sink.parallelism: 8
+        flink.kafka.sink.parallelism: 4
+        flink.responses.reorder.enabled: 'false'
+        flink.stats.calculation.ignored.responseTypes: 'assigned_conversion'
+        flink.stats.markers.results.max: 1000
+        flink.stats.markers.versions: 100
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.conversionstats.table.name: 'flink-statistics-conversion-0'
+        hbase.marker.table.name: 'flink-statistics-marker-0'
+        hbase.stats.table.name: 'flink-statistics-counters-0'
+        hbase.domainstats.table.name: 'flink-statistics-domain-0'
+        hbase.stats.flow.type: 'recovery'
+        response.expiration.days: 2
+        response.expired.path: '/tmp/userresponse-failed'
+        response.assign.conversions: 'true'
+        datastore.user.response.write.config: 'withCircuitBreaker = false, client { maxRetries = 3, thriftMux = true, workerThreads = 100, workerThreadPoolBufferSize = 100, checkServiceAvailability = false }, processing { timeout = 3.seconds }, recovery { fileDir = "/tmp/datastore/speedlayer-flink-statistics/minute/recovery/userResponse-4care", period = 1.minute, threads = 50 }'
+        customer.blacklist: '1,99905,99906,99907'
+      '/opt/speedlayer-flink-statistics/conf/config-sendout.yml':
+        auto.offset.reset: 'latest'
+        checkpointing.interval: '60000'
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        checkpointing.timeout: 1800000
+        checkpointing.failOnCheckpointingErrors: 'false'
+        flink.source.parallelism: 4
+        flink.process.parallelism: 16
+        flink.sink.parallelism: 16
+        flink.kafka.sink.parallelism: 1
+        flink.stats.markers.results.max: 1000
+        flink.stats.markers.versions: 100
+        time.window.marker: 5000
+        time.window.stats: 5000
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.marker.table.name: 'flink-statistics-marker-0'
+        hbase.stats.table.name: 'flink-statistics-counters-0'
+        hbase.domainstats.table.name: 'flink-statistics-domain-0'
+        hbase.stats.flow.type: 'sendout'
+  user-elastic:
+    package: 'speedlayer-flink-user-elastic'
+    version: '2.1.2-1'
+    configfiles:
+      '/opt/speedlayer-flink-user-elastic/conf/config.yml':
+        name: 'elasticsearch-user-prime'
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        checkpointing.timeout: 1200000
+        flink.time.window.ms: 2000
+        flink.source.parallelism: 8
+        flink.source.user.parallelism: 8
+        flink.source.membership.parallelism: 4
+        flink.source.group.parallelism: 2
+        flink.process.parallelism: 16
+        flink.process.group.parallelism: 4
+        flink.sink.parallelism: 16
+        flink.flow.mobileresponse.enabled: true
+        flink.source.mobileresponse.parallelism: 4
+        flink.sink.mobileresponse.parallelism: 16
+        flink.flow.dmpresponse.enabled: true
+        flink.source.dmpresponse.parallelism: 4
+        flink.sink.dmpresponse.parallelism: 16
+        elasticsearch.socket.timeout: 160000
+        elasticsearch.connection.timeout: 3000
+        elasticsearch.sendoutquery.timeout: 45
+        elasticsearch.update.retryonconflict: 10
+        bulk.flush.max.actions: 1000
+        bulk.flush.max.size.mb: 5
+        bulk.flush.interval.ms: 3000
+        customer.whitelist: '__UNUSED__'
+        customer.whitelist.path: '/mds/snapshots/whitelist.conf'
+        customer.whitelist.path.enable: true
+        customer.blacklist: '30049,7136,16557,7198,14006,30046,17585,7651,9255,7697'
+        customer.blacklist.path.enable: false
+        customer.whitelist.scope.path: '/mds/old_tenants.txt'
+        customer.whitelist.scope.enable: true
+        customers.sla: '99901,99902,99903,99905,99907'
+        index.autocreate.refreshinverval: '10s'
+        index.autocreate.numberofshards: 8
+        index.autocreate.numberofreplicas: 1
+        index.autocreate.translogflushsize: '512mb'
+        index.autocreate.codec: 'best_compression'
+        index.autocreate.nestedobjects.limit: 100000
+        index.mapping.sizeEnabled: true
+        index.suffix: 'prime'
+        index.routing.include.key: disk_type
+        index.routing.include.value: ssd
+        index.routing.exclude.key: disk_type
+        index.routing.exclude.value: kubernetes
+        index.bigcustomer.size.threshold.gb: 100
+      '/opt/speedlayer-flink-user-elastic/conf/config_bigtenants.yml':
+        name: 'elasticsearch-user-prime-bigtenants2'
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        checkpointing.timeout: 3600000
+        flink.time.window.ms: 5000
+        flink.source.parallelism: 4
+        flink.source.user.parallelism: 8
+        flink.source.membership.parallelism: 2
+        flink.source.group.parallelism: 1
+        flink.source.userresponse.parallelism: 8
+        flink.source.mobileresponse.parallelism: 4
+        flink.source.dmpresponse.parallelism: 4
+        flink.process.parallelism: 8
+        flink.process.usermember.parallelism: 16
+        flink.process.group.parallelism: 2
+        flink.sink.parallelism: 4
+        flink.sink.usermamber.parallelism: 16
+        flink.sink.userresponse.parallelism: 8
+        flink.sink.mobileresponse.parallelism: 4
+        flink.sink.dmpresponse.parallelism: 4
+        flink.flow.mobileresponse.enabled: true
+        flink.flow.dmpresponse.enabled: true
+        elasticsearch.socket.timeout: 200000
+        elasticsearch.connection.timeout: 3000
+        elasticsearch.sendoutquery.timeout: 45
+        elasticsearch.update.retryonconflict: 10
+        bulk.flush.max.actions: 250
+        bulk.flush.max.size.mb: 2
+        bulk.flush.interval.ms: 3000
+        customer.whitelist: '30049,7136,16557,7198,14006,30046,17585,7651,9255,7697'
+        customer.whitelist.path.enable: false
+        customer.whitelist.scope.enable: false
+        customer.blacklist:
+        customer.blacklist.path.enable: false
+        index.suffix: 'prime'
+        index.bigcustomer.size.threshold.gb: 100
+      '/opt/speedlayer-flink-user-elastic/conf/config-tmp.yml':
+        name: 'elasticsearch-user-tmp'
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: 10000
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        checkpointing.timeout: 1200000
+        flink.time.window.ms: 1000
+        flink.source.parallelism: 8
+        flink.source.membership.parallelism: 4
+        flink.source.group.parallelism: 2
+        flink.process.parallelism: 8
+        flink.process.group.parallelism: 2
+        flink.sink.parallelism: 8
+        flink.flow.mobileresponse.enabled: true
+        flink.source.mobileresponse.parallelism: 4
+        flink.sink.mobileresponse.parallelism: 8
+        flink.flow.dmpresponse.enabled: true
+        flink.source.dmpresponse.parallelism: 4
+        flink.sink.dmpresponse.parallelism: 8
+        elasticsearch.socket.timeout: 160000
+        elasticsearch.connection.timeout: 3000
+        elasticsearch.sendoutquery.timeout: 45
+        elasticsearch.update.retryonconflict: 5
+        bulk.flush.max.actions: 500
+        bulk.flush.max.size.mb: 2
+        bulk.flush.interval.ms: 1000
+        customer.whitelist: '__TO_OVERRIDE__'
+        customer.whitelist.path.enable: false
+        customer.whitelist.scope.enable: false
+        customer.blacklist.path.enable: false
+        index.suffix: 'tmp'
+        locking.enabled: false
+  user-hbase:
+    package: 'speedlayer-flink-user-hbase'
+    version: '2.1.2-1'
+    configfiles:
+      '/opt/speedlayer-flink-user-hbase/conf/config.yml':
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: 'AT_LEAST_ONCE'
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        checkpointing.timeout: '7200000'
+        flink.process.parallelism: 32
+        flink.sink.parallelism: 32
+        flink.source.parallelism: 6
+        flink.time.window.ms: '5000'
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.marker.table.name: 'flink-statistics-marker-0'
+        hbase.stats.table.name: 'flink-statistics-counters-0'
+        hbase.table.name: 'user-profile-speed-0'
+        locking.flush.interval.seconds: 5
+  userresponse-hbase:
+    package: 'speedlayer-flink-userresponse-hbase'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-userresponse-hbase/conf/config.yml':
+        auto.offset.reset: 'latest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: 'EXACTLY_ONCE'
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        checkpointing.timeout: '1200000'
+        flink.process.parallelism: 8
+        flink.sink.parallelism: 8
+        flink.source.parallelism: 8
+        flink.time.window.ms: '1000'
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.table.name: userresponse-speed-0
+  response-queue-writer:
+    package: 'response-queue-writer-flink'
+    version: '1.0.21-1'
+    configfiles:
+      '/opt/response-queue-writer-flink/conf/config.yml':
+        cassandra.contact.points: 10.128.251.14,10.128.251.32,10.128.251.23
+        cassandra.contact.port: 9042
+        cassandra.user: cassandra
+        cassandra.password: "%{alias('secrets::flink::response-queue-writer::cassandra_password')}"
+        cassandra.contact.connections.local.min: 5
+        cassandra.contact.connections.local.max: 12
+        cassandra.contact.connections.remote.min: 6
+        cassandra.contact.connections.remote.max: 15
+        cassandra.contact.connect.timeout: 20000
+        cassandra.contact.idle.timeout: 10000
+        cassandra.contact.pool.timeout: 15000
+        kafka.group.id: rq-flink-writer
+        checkpointing.interval: 10000
+        checkpointing.mode: EXACTLY_ONCE
+        flink.time.window.ms: 500
+        flink.source.parallelism: 4
+        flink.process.parallelism: 4
+        flink.map.parallelism: 2
+        flink.sink.parallelism: 5
+        flink.events.package.size: 20
+        schema-registry-path: '/schema_registry/schema_registry_master'
+        flow.name: rq_cassandra_writer
+        flow.cassandra.keyspace: rq
+        flow.cassandra.allmessages.table: all_messages
+        flow.enabled: mtaresponse,linkclick,readtrack,forwardtrack,conversion,sendtransactional,smsresponse,unsubscribe,skiptracking,senttomta
+        flow.mtaresponse.name: mta_response
+        flow.mtaresponse.topic: rq_mta_response
+        flow.mtaresponse.type: mta
+        flow.mtaresponse.cassandra.table: mta_responses
+        flow.linkclick.name: link_click
+        flow.linkclick.topic: rq_link_click
+        flow.linkclick.type: lcl
+        flow.linkclick.cassandra.table: link_clicks
+        flow.readtrack.name: read_track
+        flow.readtrack.topic: rq_read_track
+        flow.readtrack.type: rtr
+        flow.readtrack.cassandra.table: read_tracks
+        flow.forwardtrack.name: forward_track
+        flow.forwardtrack.topic: rq_forward_track
+        flow.forwardtrack.type: frt
+        flow.forwardtrack.cassandra.table: forward_tracks
+        flow.conversion.name: conversion
+        flow.conversion.topic: rq_conversion
+        flow.conversion.type: con
+        flow.conversion.cassandra.table: conversions
+        flow.sendtransactional.name: send_transactional
+        flow.sendtransactional.topic: rq_send_transactional
+        flow.sendtransactional.type: str
+        flow.sendtransactional.cassandra.table: send_transactionals
+        flow.smsresponse.name: sms_response
+        flow.smsresponse.topic: rq_sms_response
+        flow.smsresponse.type: sms
+        flow.smsresponse.cassandra.table: sms_responses
+        flow.unsubscribe.name: unsubscribe
+        flow.unsubscribe.topic: rq_unsubscribe
+        flow.unsubscribe.type: uns
+        flow.unsubscribe.cassandra.table: unsubscribes
+        flow.skiptracking.name: skip_tracking
+        flow.skiptracking.topic: rq_skip_tracking
+        flow.skiptracking.type: skt
+        flow.skiptracking.cassandra.table: skip_tracking
+        flow.senttomta.name: sent_to_mta
+        flow.senttomta.topic: rq_sent_to_mta
+        flow.senttomta.type: stm
+        flow.senttomta.cassandra.table: sent_to_mta
+  mct-processor:
+    package: 'mct-processor-flink'
+    version: '1.0.49-1'
+    configfiles:
+      '/opt/mct-processor-flink/conf/config.yml':
+        schema.registry.path: /schema_registry/schema_registry_master
+        group.id: mapp-connect-processor
+        topic.import.source: mct-processor
+        topic.import.destination: ee-actions
+        consul.url: gp13consul01
+        consul.datacenter: stg
+        flink.restart_on_failure: false
+        processor.import.source.parallelism: 1
+        processor.import.sink.parallelism: 1
+        processor.import.event_distributor.parallelism: 1
+        processor.import.bulk_processor.parallelism: 1
+        processor.import.event_consolidator.parallelism: 1
+        processor.import.event_transformator.parallelism: 1
+        couchdb.url: http://gp13custint101.muc.domeus.com:5984
+        couchdb.name: integrations
+        collocation.DEFAULT.name: STG
+        collocation.DEFAULT.url:
+        collocation.DEFAULT.ignore.sysname: true
+        collocation.DEFAULT.destination.topic: mct-cep-actions
+        auto.offset.reset: earliest
+        amazon.s3.enable: false
+        amazon.s3.endpoint: http://opstcklab-112.muc.domeus.com/
+        amazon.s3.bucket-name: mapp-connect
+        amazon.s3.access-key: accessKey
+        amazon.s3.secret-key: secretKey
+        amazon.s3.region: region
+  dmp-events:
+    package: 'dmp-events-flink'
+    version: '0.0.16'
+    configfiles:
+      '/opt/dmp-events-flink/conf/config.yml':
+        schema.registry.path: /schema_registry/schema_registry_master
+        consul.url: gp13consul01
+        consul.datacenter: stg
+        group.id: dmp-events-flink-stg
+        dmpevents.source.parallelism: 2
+        kafka.eventengine.sink.parallelism: 2
+        kafka.eventengine.action.sink_parallelism: 2
+        topic.dmpevents.source: dmp-real-time-events
+        topic.eventengine.destination: ee-events
+        topic.eventengine.action.destination: ee-actions
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.pause: 180000
+        topic.dmp.response.event.destination: dmpresponse
+  flink-phone-hbase:
+    package: 'speedlayer-flink-phone-hbase'
+    version: '2.1.14-1'
+    configfiles:
+      '/opt/speedlayer-flink-phone-hbase/conf/config.yml':
+        checkpointing.mode: EXACTLY_ONCE
+        checkpointing.interval: 2000
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: 0
+        flink.time.window.ms: "%{hiera('flink::applications::defaults.flink_time_window_ms')}"
+        flink.source.parallelism: 4
+        flink.process.parallelism: 4
+        flink.sink.parallelism: 4
+        auto.offset.reset: 'earliest'
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.table.name: phonedata-0
+  flink-product-catalog:
+    package: 'speedlayer-flink-product-catalog'
+    version: '2.1.10-1'
+    configfiles:
+      '/opt/speedlayer-flink-product-catalog/conf/config.yml':
+        auto.offset.reset: 'earliest'
+        checkpointing.interval: "%{hiera('flink::applications::defaults.checkpointing_interval')}"
+        checkpointing.mode: "%{hiera('flink::applications::defaults.checkpointing_mode')}"
+        checkpointing.pause: "%{hiera('flink::applications::defaults.checkpointing_pause')}"
+        flink.time.window.ms: "%{hiera('flink::applications::defaults.flink_time_window_ms')}"
+        flink.process.parallelism: 2
+        flink.sink.parallelism: 2
+        flink.source.parallelism: 2
+        hbase.zookeeper.znode.parent: "%{hiera('flink::applications::defaults.hbase_znode')}"
+        hbase.productcatalog.table.name: productcatalog-speed-0
+        hbase.productcatalog.family.name: catalog
+  flink-kafka-reloader:
+    package: 'kafka-reloader'
+    version: '0.0.33-1'
+    configfiles:
+      '/opt/kafka-reloader/conf/config.yml':
+        flink.source.parallelism: 5
+        flink.sink.parallelism: 2
+        defaults.customerWhitelist: 0
+        kafka.enabled: webtrekk, datastore
+        kafka.webtrekk.servers: "%{hiera('common_apps_settings.webtrekk.campaign-dashboards.kafka.brokers')}"
+        kafka.webtrekk.group: flink_kafka_reloader_prod
+        kafka.webtrekk.properties: |-
+          ssl.truststore.location: %{hiera('common_apps_settings.webtrekk.truststore.file')} \n \
+          ssl.truststore.password: %{hiera('common_apps_settings.webtrekk.truststore.password')} \n \
+          ssl.truststore.type: jks \n \
+          enable.idempotence: true \n \
+          sasl.mechanism: SCRAM-SHA-256 \n \
+            security.protocol: SASL_SSL \n \
+            sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="MappEngageIngestion" password="%{hiera('secrets::flink::kafka-reloader::webtrekk::kafka::password')}";
+        kafka.datastore.group: flink_kafka_reloader
+        kafka.datastore.schemaRegistryPath: /schema_registry/schema_registry_master
+        kafka.datastore.properties: |-
+            auto.offset.reset: earliest
+        flow.enabled: userresponse,metadata
+        flow.metadata.source: datastore
+        flow.metadata.source.topic: metadata
+        flow.metadata.source.parallelism: 5
+        flow.metadata.destinations: webtrekk:mi.metadata
+        flow.metadata.destinations.parallelism: 2
+        flow.metadata.useWhitelist: true
+        flow.metadata.customerWhitelist: 33
+        flow.metadata.source.sourceClass: com.teradata.datastore.wire.avro.metadata.AMetadataEvent
+        flow.metadata.source.customerIdExtractor: com.mapp.datastore.kafkareloader.flow.extractors.MetadataCustomerIdExtractor
+        flow.userresponse.source: datastore
+        flow.userresponse.source.topic: userresponse
+        flow.userresponse.source.parallelism: 5
+        flow.userresponse.destinations: webtrekk:mi.userresponses
+        flow.userresponse.destinations.parallelism: 2
+        flow.userresponse.useWhitelist: true
+        flow.userresponse.customerWhitelist: 33
+        flow.userresponse.source.customerIdExtractor: com.mapp.datastore.kafkareloader.flow.extractors.UserResponseCustomerIdExtractor
+        flow.userresponse.source.sourceClass: com.teradata.datastore.wire.avro.UserResponseEvent
+  webtrekk-segment-flink:
+    package: 'webtrekk-segment-flink'
+    version: '0.0.20'
+    configfiles:
+      '/opt/webtrekk-segment-flink/conf/config.yml':
+        debug: true
+        user.write.service.path: /services/userevent
+        user.write.scheme: zk
+        webtrekk.segment.source.parallelism: 1
+        webtrekk.segment.extract.parallelism: 1
+        datastore.sink.parallelism: 1
+        checkpoiting.interval: 10000
+        checkpointing.pause: 180000
+        consul.url: 10.128.238.111
+        consul.datacenter: stg
+        colocation.whitelist: stg,staging
+        socket.timeout: 5000
+        connection.timeout: 5000
+        topic.webtrekk.segment.source: mi.segments
+        schema.registry.list: "%{hiera('common_apps_settings.webtrekk.segment-exchange.schema-registry')}"
+        kafka.webtrekk.servers: "%{hiera('common_apps_settings.webtrekk.segment-exchange.kafka.brokers')}"
+        kafka.webtrekk.group: MappSegmentsConsumerEmc
+        kafka.webtrekk.properties: |-
+          ssl.truststore.location: %{hiera('common_apps_settings.webtrekk.truststore.file')} \n \
+          ssl.truststore.password: %{hiera('common_apps_settings.webtrekk.truststore.password')} \n \
+          ssl.truststore.type: jks \n \
+          sasl.mechanism: SCRAM-SHA-256 \n \
+          security.protocol: SASL_SSL \n \
+          sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="MappSegmentsConsumer" password="%{hiera('secrets::flink::webtrekk-segment::sasl::password')}";
+
+# flink manager configuration
+flink::manager::apps:
+  flink_elasticsearch-user:
+    defaults:
+      yarn_session_jm_memory: 1024
+      yarn_session_tm_memory: 2560
+      yarn_session_tm_slots: 2
+      flink_additional_parameters: 'containerized.heap-cutoff-ratio=0.25;taskmanager.memory.fraction=0.3;taskmanager.network.memory.fraction=0.3;taskmanager.network.memory.max=3gb;metrics.reporter.grph.class=com.teradata.streaming.flink.common.GraphiteLimitedReporter;metrics.reporter.grph.filterTopologies=elasticsearch-user-prime;metrics.reporter.grph.filterMetrics=performance.es-request-time,performance.gap-time,performance.throughput;metrics.reporter.grph.filterTasks=UserMember Sink;metrics.reporter.grph.interval=60 SECONDS;metrics.reporter.grph.host=os13azkaban01.muc.domeus.com;metrics.reporter.grph.port=2003;metrics.reporter.grph.protocol=TCP;metrics.reporter.grph2.class=com.teradata.streaming.flink.common.GraphiteLimitedReporter;metrics.reporter.grph2.filterTopologies=elasticsearch-user-prime;metrics.reporter.grph2.filterMetrics=stats.bigcustomerevents,stats.smallcustomerevents;metrics.reporter.grph2.interval=60 SECONDS;metrics.reporter.grph2.host=os13azkaban01.muc.domeus.com;metrics.reporter.grph2.port=2003;metrics.reporter.grph2.protocol=TCP;metrics.reporter.grph3.class=com.teradata.streaming.flink.common.GraphiteLimitedReporter;metrics.reporter.grph3.filterTopologies=elasticsearch-user-prime;metrics.reporter.grph3.filterTasks=user avro,membership avro;metrics.reporter.grph3.filterMetrics=stats.importedevents,stats.nonimportedevents;metrics.reporter.grph3.interval=60 SECONDS;metrics.reporter.grph3.host=os13azkaban01.muc.domeus.com;metrics.reporter.grph3.port=2003;metrics.reporter.grph3.protocol=TCP'
+    prime:
+      flink_run_command: '/opt/speedlayer-flink-user-elastic/speedlayer-flink-user-elastic-*-fat.jar --config /opt/speedlayer-flink-user-elastic/conf/config.yml'
+    bigtenants:
+      flink_run_command: '/opt/speedlayer-flink-user-elastic/speedlayer-flink-user-elastic-*-fat.jar --config /opt/speedlayer-flink-user-elastic/conf/config_bigtenants.yml'
+    reindex:
+      flink_run_command: ''
+  flink_event-engine:
+    defaults:
+      yarn_session_tm_memory: 1536
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/event-engine-flink/event-engine-flink-*.jar --config /opt/event-engine-flink/conf/config.yml'
+  flink_hbase:
+    defaults:
+      yarn_session_container_suffix: 'jobs'
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 3
+      flink_run_command: '/opt/speedlayer-flink-user-hbase/speedlayer-flink-user-hbase-*-fat.jar --config /opt/speedlayer-flink-user-hbase/conf/config.yml'
+      flink_additional_parameters: 'containerized.heap-cutoff-ratio=0.15;taskmanager.memory.fraction=0.3;taskmanager.network.memory.fraction=0.3;taskmanager.network.memory.max=2gb'
+  flink_hbase-mobileresponses:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/speedlayer-flink-mobile-statistics/speedlayer-flink-mobile-statistics-*-fat.jar --config /opt/speedlayer-flink-mobile-statistics/conf/config.yml'
+  flink_hbase-statistics:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 3
+    regular:
+      flink_run_command: '/opt/speedlayer-flink-statistics/speedlayer-flink-statistics-*-fat.jar --config /opt/speedlayer-flink-statistics/conf/config.yml'
+    recovery:
+      flink_run_command: '/opt/speedlayer-flink-statistics/speedlayer-flink-statistics-*-fat.jar --config /opt/speedlayer-flink-statistics/conf/config-recovery.yml'
+    sendout:
+      flink_run_command: '/opt/speedlayer-flink-statistics/speedlayer-flink-statistics-*-fat.jar --config /opt/speedlayer-flink-statistics/conf/config-sendout.yml'
+  flink_hbase-userresponse:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/speedlayer-flink-userresponse-hbase/speedlayer-flink-userresponse-hbase-*-fat.jar --config /opt/speedlayer-flink-userresponse-hbase/conf/config.yml'
+  flink_interaction-planner:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/interaction-planner-flink/interaction-planner-flink-*-fat.jar --config /opt/interaction-planner-flink/conf/config.yml'
+  flink_locking-injection:
+    defaults:
+      yarn_session_tm_memory: 1024
+      yarn_session_tm_slots: 1
+      flink_run_command: '/opt/speedlayer-flink-locking-injection/speedlayer-flink-locking-injection-*-fat.jar --config /opt/speedlayer-flink-locking-injection/conf/config.yml'
+  flink_relateddata:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 2
+      flink_additional_parameters: 'containerized.heap-cutoff-ratio=0.15;taskmanager.memory.fraction=0.3;taskmanager.network.memory.fraction=0.3;taskmanager.network.memory.max=3gb'
+    hbase:
+      flink_run_command: '/opt/speedlayer-flink-relateddata-hbase/speedlayer-flink-relateddata-hbase-*-fat.jar --config /opt/speedlayer-flink-relateddata-hbase/conf/config.yml'
+    hbase-locking:
+      flink_run_command: '/opt/speedlayer-flink-relateddata-hbase/speedlayer-flink-relateddata-hbase-*-fat.jar --config /opt/speedlayer-flink-relateddata-hbase/conf/config.yml --name hbase-locking-handling --customer.whitelist.path.enable false --hbase.table.name relateddata-speed-tmp --customer.blacklist.path /mds/snapshots/rd_whitelist.conf --customer.blacklist.path.enable true'
+    hbase-tmp:
+      flink_run_command: ''
+    elastic:
+      yarn_session_tm_memory: 2048
+      flink_run_command: '/opt/speedlayer-flink-relateddata-elastic/speedlayer-flink-relateddata-elastic-*-fat.jar --config /opt/speedlayer-flink-relateddata-elastic/conf/config.yml'
+  flink_dmp:
+    defaults:
+      yarn_session_container_suffix: jobs
+      yarn_session_tm_memory: 2048
+      flink_run_command: '/opt/dmp-events-flink/dmp-events-flink-*-fat.jar --config /opt/dmp-events-flink/conf/config.yml'
+  flink_mct_processor:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 1
+      flink_run_command: '/opt/mct-processor-flink/mct-processor-flink-*-fat.jar --config /opt/mct-processor-flink/conf/config.yml'
+  flink_kafka-reloader:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 1
+      flink_run_command: '/opt/kafka-reloader/kafka-reloader-*-fat.jar --config /opt/kafka-reloader/conf/config.yml'
+  flink_rq_writer:
+    defaults:
+      yarn_session_tm_memory: 2048
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/response-queue-writer-flink/response-queue-writer-flink-*-fat.jar --config /opt/response-queue-writer-flink/conf/config.yml'
+  flink_phone-hbase:
+    defaults:
+      yarn_session_tm_memory: 3072
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/speedlayer-flink-phone-hbase/speedlayer-flink-phone-hbase-*-fat.jar --config /opt/speedlayer-flink-phone-hbase/conf/config.yml'
+  flink_hbase-productcatalog:
+    defaults:
+      yarn_session_tm_memory: 1024
+      yarn_session_tm_slots: 2
+      flink_run_command: '/opt/speedlayer-flink-product-catalog/speedlayer-flink-product-catalog-*-fat.jar --config /opt/speedlayer-flink-product-catalog/conf/config.yml'
+  flink_webtrekk-segment:
+    defaults:
+      yarn_session_tm_memory: 2560
+      yarn_session_tm_slots: 1
+      flink_run_command: '/opt/webtrekk-segment-flink/webtrekk-segment-flink-*-fat.jar --config /opt/webtrekk-segment-flink/conf/config.yml'

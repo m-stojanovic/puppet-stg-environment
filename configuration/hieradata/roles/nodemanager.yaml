@@ -1,0 +1,58 @@
+---
+# Common hadoop limits
+limits::entries:
+  'hdfs/nofile':
+    both: 262144
+  'hdfs/nproc':
+    both: 65536
+  'mapred/nofile':
+    both: 262144
+  'mapred/nproc':
+    both: 65536
+  'yarn/nofile':
+    both: 524288
+  'yarn/nproc':
+    both: 65536
+    
+profiles::nrpe::checks:
+  check_yarn_nodemanager:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a yarn-nodemanager
+filebeat::package_ensure: 6.8.6
+filebeat::manage_repo: false
+filebeat::manage_apt: false
+filebeat::major_ensure: 6
+filebeat::inputs:
+  mapp-ml-yarn:
+    paths:
+      - /DATA?/hadoop-datastore/yarn/usercache/snapshots/appcache/*/*/ml-user-features.logstash
+    fields_under_root: true
+    fields:
+      colocation: STG
+      type: mapp-ml
+    fields_under_root: true
+    json:
+      keys_under_root: true
+      add_error_key: true
+      overwrite_keys: true
+filebeat::outputs:
+  logstash:
+    hosts:
+      - "es101.muc.domeus.com:5045"
+      - "es102.muc.domeus.com:5045"
+      - "es103.muc.domeus.com:5045"
+      - "es104.muc.domeus.com:5045"
+      - "es105.muc.domeus.com:5045"
+      - "es106.muc.domeus.com:5045"
+      - "es107.muc.domeus.com:5045"
+      - "es108.muc.domeus.com:5045"
+      - "es109.muc.domeus.com:5045"
+      - "es110.muc.domeus.com:5045"
+    loadbalance: true
+filebeat::logging:
+  files:
+    path: /var/log
+    name: filebeat.log
+    rotateeverybytes: 10485760
+  level: info
+  to_files: true

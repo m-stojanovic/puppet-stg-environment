@@ -1,0 +1,116 @@
+smoketest {
+
+  type = userAttribute
+  mode = speed //remove after the refactoring is done
+
+  howMany = 100
+  requestTimeout = 2.seconds
+  workerThreads = 30
+  maxReadRetries = 3
+  retryReadInterval = 7.second
+
+  statsFile = "logs/smoketestclientstats.dat"
+  //statsFileWithTimeStamp = true
+
+  resultLimit {
+    successPercentage = 95.0
+    averageRequestDuration = 40.milliseconds
+  }
+
+  userAttribute {
+    type = speed // speed, batch-store, batch-test
+    readSource = userProfile // fastCount
+    userAttributeFile = "logs/userattibutes1000.json"
+
+    batch {
+      fileDir = "userAttribute/batch"
+      filePeriod = 1.hour
+    }
+
+    findUser {
+      destination = "<%= @selection_count_path %>"
+    }
+
+    lockingService {
+      destination = "<%= @locking_service %>"
+    }
+
+    data {
+      tenantId = <%= @tenantid %>
+      minUserId = 1
+      maxUserId = 1000
+      minGroupId = 1
+      maxGroupId = 100
+      maxAttributeNames = 4000
+      maxAttributeNameLength = 50
+      maxStringAttributeValueLength = 100
+      newAttributeNamesPerRun = 10
+	  //  unicodeStrings = true
+	  //  deleteUsersOnExit = false
+    }
+  }
+}
+
+userserviceClient {
+  connect {
+    scheme = "<%= @scheme %>"
+    quorum  = "<%= @zk_quorum %>"
+    path = "<%= @user_service_announce_path %>"
+  }
+  client {
+    maxRetries = 3
+    thriftMux = true
+    workerThreads = 30
+    checkServiceAvailability = true
+  }
+  processing {
+    timeout = 5.seconds
+  }
+}
+
+userprofileClient {
+  connect {
+    scheme = "<%= @scheme %>"
+    quorum  = "<%= @zk_quorum %>"
+    path = "<%= @user_profile_announce_path %>"
+  }
+  client {
+    maxRetries = 3
+    thriftMux = true
+    workerThreads = 30
+    checkServiceAvailability = true
+  }
+  processing {
+    timeout = 5.seconds
+  }
+}
+
+statistics {
+  dumpInterval = "<%= @stats_dump_interval %>"
+  statsWindows = [1.minute, 10.minutes, 1.hour]
+  httpConnector {
+    url = "<%= @stats_collector_path %>"
+    timeout = "<%= @stats_http_timeout %>"
+  }
+}
+
+selectionEngine {
+  port = 60022
+  scheme = "<%= @scheme %>"
+  quorum  = "<%= @zk_quorum %>"
+  path = "<%= @selection_announce_path %>"
+  shard = 0
+  announcetimeout = 30000
+
+  nodeCounter = "elasticsearch" //"random"
+  nodeCountTimeout = 2.seconds
+
+  elasticsearch {
+    connect {
+      clusterName = "<%= @es_cluster_name %>"
+      transportAddresses = [
+        "<%= @es_client_nodes %>"
+      ]
+    }
+  }
+}

@@ -1,0 +1,461 @@
+---
+lookup_options:
+  apt::sources:
+    merge: hash
+  profiles::baseprofile::packages:
+    merge: hash
+  profiles::baseprofile::ssh_keys:
+    merge: hash
+  profiles::nrpe::checks:
+    merge: hash
+  profiles::firewall::rules::ipv4:
+    merge: hash
+  profiles::firewall::rules::ipv6:
+    merge: hash
+  flink::manager::apps:
+    merge: hash
+  flink::manager::packages:
+    merge: hash
+  nginx::nginx_upstreams:
+    merge: hash
+  nginx::nginx_locations:
+    merge: hash
+  nginx::nginx_servers:
+    merge: hash
+
+puppet_agent::package_version: '6.14.0'
+puppet_agent::is_pe: false
+puppet_agent::manage_repo: false
+puppet_agent::service_names:
+  - 'puppet'
+
+profiles::baseprofile::dns:
+  nameservers:
+    - '195.140.186.10'
+    - '195.140.186.11'
+  domains:
+    - 'muc.domeus.com'
+    - 'ecircle.de'
+    - 'muc.ecircle.de'
+  options:
+    - 'rotate'
+ 
+profiles::baseprofile::timezone: Europe/Berlin
+
+profiles::baseprofile::ntp_servers_list:
+  - ntp.muc.domeus.com
+
+apt::update:
+  frequency: always
+  timeout: 60
+
+apt::purge:
+  sources.list.d: true
+  sources.list: true
+
+profiles::baseprofile::packages:
+  less:
+    version: installed
+    pin: false
+  vim:
+    version: installed
+    pin: false
+  mc:
+    version: installed
+    pin: false
+  bzip2:
+    version: installed
+    pin: false
+  bash-completion:
+    version: installed
+    pin: false
+  curl:
+    version: installed
+    pin: false
+  lsb-release:
+    version: installed
+    pin: false
+  lsof:
+    version: installed
+    pin: false
+  axel:
+    version: installed
+    pin: false
+  dnsutils:
+    version: installed
+    pin: false
+  arping:
+    version: installed
+    pin: false
+  tmux:
+    version: installed
+    pin: false
+  telnet:
+    version: installed
+    pin: false
+  tree:
+    version: installed
+    pin: false
+  iotop:
+    version: installed
+    pin: false
+  htop:
+    version: installed
+    pin: false
+  dstat:
+    version: installed
+    pin: false
+  cryptsetup:
+    version: installed
+    pin: false
+  libsys-statistics-linux-perl:
+    version: installed
+    pin: false
+  net-tools:
+    version: installed
+    pin: false
+  procinfo:
+    version: installed
+    pin: false
+  ethtool:
+    version: installed
+    pin: false
+  python-yaml:
+    version: installed
+    pin: false
+  jq:
+    vesrion: installed
+    pin: false
+  lsscsi:
+    version: installed
+    pin: false
+  sysstat:
+    version: installed
+    pin: false
+  screen:
+    version: installed
+    pin: false
+  ntpdate:
+    version: installed
+    pin: false
+
+profiles::baseprofile::files_upload:
+  '/usr/local/bin/mapp-metrics-threads-all.sh':
+    mode: '0775'
+
+nrpe::dont_blame_nrpe: '1'
+nrpe::allowed_hosts:
+  - 127.0.0.1
+  - 192.168.125.180
+  - 192.168.121.187
+  - 192.168.124.63
+  - 192.168.121.188
+
+profiles::nrpe::checks:
+  check_apt:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_apt
+  check_linux_raid:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_linux_raid
+  check_iftraffic:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_iftraffic.sh -i eth0
+  check_users:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_users 10 15
+  check_swap:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_swap -c 25% -w 75%
+  check_load:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
+  check_zombie_procs:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs 5 10 Z
+  check_ntp:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_ntp_time -H ntp.muc.domeus.com -w 0.5 -c 1 -t 6
+  check_dnscache:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_dns -H cnn.com. -w 5 -c 6
+  check_syslog:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -C rsyslogd -c 1:1 -t 6
+  check_cron:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -C cron -c 1:2 -t 6
+  check_sshd:
+    ensure: present
+    command: '/usr/lib/nagios/plugins/check_procs -C sshd -c 1: -t 6'
+  check_total_procs:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs 250 350
+  check_ntp_time:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_ntp_time -H ntp.muc.domeus.com -w 0.5 -c 1 -t 6
+  check_memory:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_linux_stats.pl -M -w 90,80 -c 95,95
+  check_cpu:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_linux_stats.pl -C -w 90 -c 95 -s 5
+  check_iostat:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_linux_stats.pl -I -w 400,400 -c 600,600 -p sda3,sdb3,sdc3,sdd3
+  check_puppet_agent_process:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_puppet_agent_process.sh
+  check_puppet_agent_last_run:
+    ensure: present
+    command: /usr/bin/sudo /usr/lib/nagios/plugins/check_puppet_agent_last_run.py -w 4500 -c 5400
+  check_disks:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_disk -e -l -w 13% -c 8% -W 13% -K 8% -r / -I /var/lib/docker/ -I /run/docker
+  check_cluster_health:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_cluster_health.py
+  check_procinfo:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procinfo.sh
+  check_fs_status:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_fs_status.sh
+
+collectd::read_threads: 5
+collectd::write_threads: 5
+collectd::interval: 30
+collectd::purge: true
+collectd::recurse: true
+collectd::purge_config: true
+collectd::collectd_hostname: '%{::hostname}'
+collectd::fqdnlookup: false
+collectd::package_ensure: 'latest'
+collectd::minimum_version: '5.8'
+collectd::typesdb:
+  - /etc/collectd/custom-types.db
+  - /usr/share/collectd/types.db
+collectd::type:
+  'jmx_memory':
+    target: '/etc/collectd/custom-types.db'
+    ds_type: 'GAUGE'
+    min: 0
+    max: 'U'
+  'rde_runningjobs':
+    target: '/etc/collectd/custom-types.db'
+    ds_name: 'RunningJobs'
+    ds_type: 'GAUGE'
+    min: 0
+    max: 'U'
+  'job_details':
+    target: '/etc/collectd/custom-types.db'
+    ds_name: 'CustomerId'
+    ds_type: 'GAUGE'
+    min: 0
+    max: 'U'
+  'jobs_details':
+    target: '/etc/collectd/custom-types.db'
+    ds_type: 'GAUGE'
+    min: 0
+    max: 'U'
+    
+collectd_plugins:
+  - collectd::plugin::logfile
+  - collectd::plugin::cpu
+  - collectd::plugin::memory
+  - collectd::plugin::swap
+  - collectd::plugin::load
+  - collectd::plugin::uptime
+  - collectd::plugin::vmem
+  - collectd::plugin::java
+  - collectd::plugin::interface
+  - collectd::plugin::disk
+  - collectd::plugin::genericjmx
+  - collectd::plugin::network
+  - collectd::plugin::processes
+  - collectd::plugin::exec
+
+collectd::plugin::logfile::log_file: /var/log/collectd.log
+collectd::plugin::logfile::print_severity: true
+  
+collectd::plugin::network::servers:
+  'graphes17.muc.domeus.com':
+    port: 25826
+    securitylevel: None  
+
+collectd::plugin::aggregation::aggregators:
+  cpu:
+    plugin: cpu
+    groupby:
+      - Host
+      - TypeInstance
+
+collectd::plugin::cpu::reportbystate: true
+collectd::plugin::cpu::reportbycpu: false
+collectd::plugin::cpu::reportnumcpu: false
+collectd::plugin::cpu::valuespercentage: true
+collectd::plugin::load::report_relative: false
+collectd::plugin::interface::interfaces:
+  - lo
+  - veth*
+collectd::plugin::interface::ignoreselected: true
+collectd::plugin::disk::disks:
+  - /^dm/
+collectd::plugin::disk::ignoreselected: true
+collectd::plugin::exec::commands:
+  'mapp-metrics-threads-all':
+    user: nobody
+    group: nogroup
+    exec:
+      - "/usr/local/bin/mapp-metrics-threads-all.sh"
+collectd::plugin::genericjmx::jvmarg: -verbose:jni
+collectd::plugin::genericjmx::mbean:
+  garbage_collector:
+    object_name: java.lang:type=GarbageCollector,*
+    instance_prefix: gc-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: invocations,
+          table: false,
+          attribute: CollectionCount,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: collection_time,
+          table: false,
+          attribute: CollectionTime,
+        }
+  memory_pool:
+    object_name: java.lang:type=MemoryPool,*
+    instance_prefix: memory_pool-
+    instance_from: ['name']
+    values:
+      - {          
+          mbean_type: jmx_memory,
+          table: true,
+          instance_prefix: ,
+          attribute: Usage,
+        }
+  memory:
+    object_name: java.lang:type=Memory
+    instance_prefix: memory
+    values:
+      - {
+          mbean_type: jmx_memory,
+          table: true,
+          instance_prefix: heap-,
+          attribute: HeapMemoryUsage,
+        }
+      - {
+          mbean_type: jmx_memory,
+          table: true,
+          instance_prefix: nonheap-,
+          attribute: NonHeapMemoryUsage,
+        }
+collectd::plugin::genericjmx::connection: {}
+
+logrotate::ensure: latest
+logrotate::config:
+  compress: true
+  delaycompress: true
+  dateext: true
+  ifempty: false
+  rotate_every: day
+  rotate: 21
+logrotate::rules:
+  collectd:
+    path: '/var/log/collectd.log'
+
+profiles::baseprofile::ssh_keys:
+  root@admin-l3:
+    user: root
+    type: ssh-rsa
+    key: AAAAB3NzaC1yc2EAAAABIwAAAQEA3CVeMDsqXkrnr/B3TBidgdZ+DKEssvY4NaZsUxYASJrzchkKe1n1rVpo7Anb7BBNmb8occyhkpwtCiYXQp326RtHGR7sZ6WPOAtI6InOvPZ6fleKUZrcQ6iD64Up5ruRrgV6R464hneeTnwYx42rBocLZWnTa+9S34PHHx7/qEYpclllR3WoIyjblDvqsZIFGkKZZFnrl8LIAOX57Fg+UrwsfvO1dly9Nx3RFCkivhi+Y0PAoLCJA8Ib11LSfybRI0rEwM4Pia6BvBwuJxe0XW5Gcobzo6spUlv3QfN/HBZJ8GXKsNFbLorfI3AJOC/6UPmJULcL6WiKmMCsr57GVw==
+  sshproxy:
+    user: root
+    type: ssh-rsa
+    key: AAAAB3NzaC1yc2EAAAADAQABAAACAQCySqQPSdXcvcxBvWWSHwLPtykAoas/68DytYzHxahfxIKpvjVYmjl3+jQnuyotxWa1CXk+s6lW7KmnTLl5ylYiiv62/Enq/leiS/wRgUMCvxPbzUzzwFNuoM3x3ju7CwgP/tsvBZpxo/4ZamwsWnYkEYXSmoW3ZPUSH9uRPSfi/jyVcXPAypBQepcx5S/lqhRtGsRWZC8W8sVO5BJ4hAlYpfiRB5vOsjWreTgxuJdcAKlcQYP55FY1qjWsGKFn7bjlqQ9VzqHmE8R3sHz+eq3LRm2B4ICSWlGIVCE3yRddkRRB9X5eaBa3tp1vjzMEq7ZHgDZrZnM6hfwQ5eckbILgDAr6IFPM+zE8RgPWMTLA8gl6Q02Mzs0/T8vkj6fKLpcIQ7psoHltVd900ydD5VoNL7MROuZu30YkwrDz1RZM6S2whOfErBsPydeqrfjCIuxnIuNSfnBp3jHcMU1ClX5+aGKtmLz14d+SupxPLNxX4otML2p2BF5LGRt4t2eBvlY6s2GiiDjK/fw+9HL5AWS8w1vZV4inPPuTHNsC0UAZQcjcnqZbgOBdQW2FH4OLX5Vskvy/lFukzX86xkcv3xtIqnva2Sxea9r7bsRHwyq2mGAp6MvVXRSOU7NnECMd1RsRiAAl90gLyk7TuVvksxzOOJIQ4NsIax1ONlG/qHa4jQ==
+  Mladen Antunovic:
+    user: root
+    type: ssh-rsa
+    key: AAAAB3NzaC1yc2EAAAADAQABAAACAQC+ujeP9YU8DH3hcVVBqCEw5S6GZNsaBGwkPZv1hqXeSRzpW01+eK4g36BMUz5ghYNHv7dlSvltkSqtYBxxI7rsLSZVi+sedAYFz1N4xV0FvuTxJn/g45J1UinVJbxYjwBYNW3yxVuy86Tkfebh/Xr9wcwitp6PQPI3VJmHNRQ4YBJIGbXBkE9nwpx3eejLB37YwP34tAUFkcoBJZG9BYMWggBJfOHaSpbwWzdQP4dZ6Qwhf9lCrAEiXXobBS0vm4ZFg0VyxVySKKLQWRo7qHyfXfsGCHXj3WyGWnmV7Fn3DNU8bsc15GAChkLZqJ/DyTqd4buczGwx0FXyjdzGN4sqSfqmYgHdMgt/hn85QICblAcEIaS/Lk0FLaCUz89SMD+xZm3RYh/Vwsf8vyMchIkiMvB4RFAkJ+81iwqMValWdP8yEeMG2T4iGJnJj7UDG6d76OZ4L34UDyOcd9g1MztHyBgWzYretougJnv6kEpL0lu0tZjuiVMtdwUCk/zI1GMP5WlPDHUdDsYzAfUK2ZJ48VuvOrtaVmuRN//tvWpd4ZesOQsxzIRX0GFYIEBEsG4FXXn5BmjCRXSQKQ38RMhc7RSJ1fM6jmReccfU9vqqIbGF7FsPnZO2D+0tR8eqWVBguBt4gICmnCtl6uToslniXMY4Nkd8iueuoIdzZ5F03w==
+  root@os13azkaban01:
+    user: root
+    type: ssh-rsa
+    key: AAAAB3NzaC1yc2EAAAADAQABAAABAQDB7xOxk9ktvCSkJ3zkdEx935U6StYOwm7mg7007NUsIqSd6kVaZD3zA+MbMh0Hb2w4VfzsQOMK4bpUo/NIBWciKQ6nGMa/1I6GuKy6lWg2HGbpnMh6zGNZQKUmuC2A2neqQicglPteIB2/5Bqn2G06oW2SNOYv8WVbGNoRkG6+FPc1Y+lsOPEKQEk9LiZ7JTWdq3yrfv5KBHZ3X9bR4aXYe0Mwg3LixnanxPyls9HGCBGmV/nA0fbLcSy/7x2m13Wd1Yy08/xvzYz/Q2cKJiEOQwjMXY6h9nkeWn0nPxhXWG7vSF2yR3qMKkOMkYMAfycWKibwFpB21qbVrrjQuSNH
+  root@dspuppet01:
+    user: root
+    type: ssh-rsa
+    key: AAAAB3NzaC1yc2EAAAADAQABAAABAQCe5gag2I+1hnMsp0R7K4xDz1m9txvTqPMJeLbChc0ODC1qnkRGWQ0DIqkDii+Tj38m9pFWG+EInw0RvvUXVoqyDTLAuj37AnR7Fss6lrg9YvSqgyv/2zWl+a5aBkVQ6ZuKZcUYZmf2YJaRVh9dYitpGWukvNz5YWHUmhH7NcMIgT8MWI9GaAmc+2bicP15XRBGMfkvrMZdWwe8qHUdk11Rmy7eMnIWSqmLCH16mcBF6IJTdUELuKvMjBiILCy+QCdAhg3Vcrr8rT/lmlKgOjQHmHcM9aqi6GE1NM8TTtpSpVvzP/33pxh/ZOV65sYds0y3AwGyYwB7q8ZnNvrjHTeh
+
+limits::entries:
+  'root/nofile':
+    both: 131072
+      
+pam::options:
+  common-session-pam_limits.so:
+    ensure: present
+    service: common-session
+    type: session
+    control: required
+    module: pam_limits.so
+
+sysctl::entries:
+  net.ipv4.tcp_syncookies:
+    value: 1
+  net.ipv4.ip_default_ttl:
+    value: 59
+  net.ipv4.tcp_timestamps:
+    value: 0
+  net.ipv4.conf.all.rp_filter:
+    value: 2
+  fs.file-max:
+    value: 320000
+  vm.swappiness:
+    value: 0
+  net.ipv6.bindv6only:
+    value: 0
+  net.ipv6.conf.all.disable_ipv6:
+    value: 1
+  net.core.somaxconn:
+    value: 1024
+
+profiles::dockerengine::registries:
+  - 'artifactory.mapp.tools'
+  - 'docker-public.muc.domeus.com'
+
+docker::use_upstream_package_source: false
+docker::service_overrides_template: false
+docker::docker_ce_package_name: docker-ce
+docker::version: '18.03.1~ce-0~debian'
+docker::repo_opt: ''
+docker::registry_auth::registries:
+  - docker-public.muc.domeus.com
+docker::bip: '10.0.1.1/24'
+docker::manage_service: false
+
+sudo::purge: true
+sudo::config_file_replace: true
+sudo::configs:
+  nagios:
+    content: 'nagios  ALL=(root) NOPASSWD: /usr/lib/nagios/plugins/check_puppet_agent_last_run.py,/usr/lib/nagios/plugins/check_flink_containers.sh,/usr/lib/nagios/plugins/check_disk'
+    priority: 10
+
+common_apps_settings:
+  hbase:
+    znode: '/hbase'
+  azkaban:
+    user: azkaban
+    password: "%{alias('secrets::azkaban::password')}"
+  webtrekk:
+    campaign-dashboards:
+      kafka:
+        brokers: 'ingestion-kafka-wd-int-01.nbg.webtrekk.com:9092,ingestion-kafka-wd-int-02.nbg.webtrekk.com:9092,ingestion-kafka-wd-int-03.nbg.webtrekk.com:9092'
+    segment-exchange:
+      kafka:
+        brokers: 'public-kafka-wd-int-01.nbg.webtrekk.com:9092,public-kafka-wd-int-02.nbg.webtrekk.com:9092,public-kafka-wd-int-03.nbg.webtrekk.com:9092'
+      schema-registry: 'https://warp-schema-registry-int-01.nbg.webtrekk.com:8080,https://warp-schema-registry-int-02.nbg.webtrekk.com:8080'
+    truststore:
+     file: '/opt/webtrekk/webtrekk-SRV-DC1-CA.truststore'
+     password: "%{hiera('secrets::common::webtrekk::truststore::password')}"

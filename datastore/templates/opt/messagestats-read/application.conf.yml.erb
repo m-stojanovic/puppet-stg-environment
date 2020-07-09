@@ -1,0 +1,21 @@
+messageStatsReadApp {
+  messageStatsRead {
+    service {
+      enabled = <%= @enabled %>
+      port = <%= @service_port %>
+      scheme = "<%= scope['datastore::zk_scheme'] %>"
+      quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+      announcepath = "<%= @announce_path %>"
+      shard = <%= @shard %>
+      announcetimeout = <%= @announce_timeout %>
+      protocol = "<%= @protocol %>"
+    }
+    hbaseclient {
+      quorum = "<%= scope['datastore::hd_zookeeper_list'] %>"
+      zkclientport = "<%= scope['datastore::hd_zookeeper_clientport'] %>"
+      znodeparent = "<%= @hbase_znode %>"
+      statsTableName = "<%= @hbase_stats_table %>"
+      domainStatsTableName = "<%= @hbase_domain_stats_table %>"
+    }
+  }
+}

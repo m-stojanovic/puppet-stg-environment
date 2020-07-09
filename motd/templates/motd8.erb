@@ -1,0 +1,28 @@
+                   ,-'     `._ 
+                 ,'           `.        ,-. 
+               ,'               \       ),.\ 
+     ,.       /                  \     /(  \; 
+    /'\\     ,o.        ,ooooo.   \  ,'  `-') 
+    )) )`. d8P"Y8.    ,8P"""""Y8.  `'  .--"' 
+   (`-'   `Y'  `Y8    dP       `'     / 
+    `----.(   __ `    ,' ,---.       ( 
+           ),--.`.   (  ;,---.        ) 
+          / \O_,' )   \  \O_,'        |             -------------------------------------------------------------------------------
+         ;  `-- ,'       `---'        |             -------------------- This machine is maintained by Puppet! --------------------
+         |    -'         `.           |             --------------      Unauthorized users will face Shrek         ----------------
+        _;    ,            )          :             -------------------------------------------------------------------------------
+     _.'|     `.:._   ,.::" `..       |             Operating system: <%= @facts['os']['distro']['id'] %> - <%= @facts['os']['distro']['codename'] %> - <%= @facts['os']['distro']['release']['full'] %>
+  --'   |   .'     """         `      |`.           Hostname: <%= @facts['networking']['fqdn'] %>
+        |  :;      :   :     _.       |`.`.-'--.    Puppet environment: <%= @facts['agent_specified_environment'] %>
+        |  ' .     :   :__.,'|/       |  \          Puppet version: <%= @facts['puppetversion'] %>
+        `     \--.__.-'|_|_|-/        /   )         Uptime: <%= @facts['system_uptime']['uptime'] %> 
+         \     \_   `--^"__,'        ,    |         Memory: <%= @facts['memory']['system']['total'] %>
+        ;  `    `--^---'          ,'     | 
+          \  `                    /      / 
+           \   `    _ _          / 
+            \           `       / 
+             \           '    ,' 
+              `.       ,   _,' 
+                `-.___.---' 
+
+

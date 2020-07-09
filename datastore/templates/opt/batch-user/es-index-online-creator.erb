@@ -1,0 +1,5 @@
+<% @properties.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+es.http.nodes=<%= scope['datastore::es_http_nodes'] %>
+registry.repository.url=zk!<%= scope['datastore::hd_zookeeper_path'] %>!/services/registry

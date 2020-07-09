@@ -1,0 +1,290 @@
+---
+# hadoop common
+hadoop::group: 'hadoop'
+hadoop::group_yarn: 'yarn'
+hadoop::user_dfs: 'hdfs'
+hadoop::user_mapred: 'mapred'
+hadoop::user_yarn: 'yarn'
+hadoop::hadoop_version: '2.6.0+cdh5.14.0+2715-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+hadoop::mapred_version: '2.6.0+cdh5.14.0+2715-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+hadoop::yarn_version: '2.6.0+cdh5.14.0+2715-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+hadoop::java_home: '/usr/lib/jvm/java-8-oracle'
+hadoop::java_version: '8u161-amd64-mapp'
+hadoop::mapp_yarn_am_version: '0.8.0'
+hadoop::data_mounts:
+  - '/DATA1'
+  - '/DATA2'
+
+# hadoop::config
+hadoop::config::alternative_name: 'hadoop-conf'
+hadoop::config::alternative_link: '/etc/hadoop/conf'
+hadoop::config::common_fad:
+  "%{hiera('hadoop::config::configuration_directory')}":
+    ensure: 'directory'
+    recurse: true
+    purge: true
+  "%{hiera('hadoop::config::configuration_directory')}/exclude-nodes":
+    ensure: 'present'
+  '/var/log/hadoop':
+    ensure: 'directory'
+    owner: 'root'
+    group: "%{hiera('hadoop::group')}"
+    mode: '0775'
+hadoop::config::configuration_directory: '/etc/hadoop/conf-puppet/'
+hadoop::config::configuration_files:
+  base:
+    '/etc/hadoop/conf-puppet/hadoop-metrics.properties': {}
+    '/etc/hadoop/conf-puppet/hadoop-metrics2.properties': {}
+    '/etc/hadoop/conf-puppet/log4j.properties': {}
+    '/etc/hadoop/conf-puppet/hadoop-env.sh': {}
+    '/etc/hadoop/conf-puppet/core-site.xml': {}
+  exec:
+    '/etc/hadoop/conf-puppet/topology.py':
+      mode: '0755'
+  hdfs:
+    '/etc/hadoop/conf-puppet/hdfs-site.xml': {}
+    '/etc/hadoop/conf-puppet/masters': {}
+    '/etc/hadoop/conf-puppet/slaves': {}
+  mapred:
+    '/etc/hadoop/conf-puppet/mapred-env.sh': {}
+    '/etc/hadoop/conf-puppet/mapred-site.xml': {}
+    '/etc/hadoop/conf-puppet/fair-scheduler.xml': {}
+  yarn:
+    '/etc/hadoop/conf-puppet/yarn-env.sh': {}
+    '/etc/hadoop/conf-puppet/yarn-site.xml': {}
+    '/etc/hadoop/conf-puppet/capacity-scheduler.xml': {}
+hadoop::config::datanode_heap_mb: '4096'
+hadoop::config::dfs_client_read_shortcircuit: true
+hadoop::config::dfs_client_read_shortcircuit_buffer_size: '131072'
+hadoop::config::dfs_client_read_shortcircuit_streams_cache_size: '1000'
+hadoop::config::dfs_client_read_shortcircuit_streams_cache_size_expiry_ms: '1000'
+hadoop::config::enable_fairscheduler: true
+hadoop::config::extra_opts_hadoop_env_malloc_arena_max: 'export MALLOC_ARENA_MAX=4'
+hadoop::config::fairshare_cust_minmaps: '200'
+hadoop::config::fairshare_cust_minreduces: '100'
+hadoop::config::fairshare_cust_minshare_preemption_timeout: '300'
+hadoop::config::fairshare_def_minshare_preemption_timeout: '300'
+hadoop::config::fairshare_preemption_timeout: '600'
+hadoop::config::hadoop_client_opts: '-Xms256m -Xmx4g'
+hadoop::config::heapsize_in_mb: '4096'
+hadoop::config::jobtracker_heap_mb: '10240'
+hadoop::config::mapreduce_framework_name: 'yarn'
+hadoop::config::master_namenode1: 'os13dshdm01.muc.domeus.com'
+hadoop::config::master_namenode1_alias: 'dsstg1nn1'
+hadoop::config::master_namenode2: 'os13dshdm02.muc.domeus.com'
+hadoop::config::master_namenode2_alias: 'dsstg1nn2'
+hadoop::config::metrics_ganglia_host: 'localhost'
+hadoop::config::metrics_ganglia_udp_port: '60'
+hadoop::config::metrics_sampling_period: '60'
+hadoop::config::metrics_use_ganglia: false
+hadoop::config::namenode_rpc_port: '54312'
+hadoop::config::preemption_interval: '15000'
+hadoop::config::preemption_onlylog: false
+hadoop::config::tasktracker_heap_mb: '4096'
+hadoop::config::topology:
+  - '192.168.139.92,/rack0'
+  - '192.168.139.93,/rack0'
+  - '192.168.139.94,/rack0'
+  - '192.168.139.95,/rack1'
+  - '192.168.139.96,/rack1'
+  - '192.168.139.97,/rack1'
+hadoop::config::uber_logging: false
+hadoop::config::update_interval: '500'
+hadoop::config::yarn_app_mapreduce_am_resource_mb: '1024'
+hadoop::config::yarn_resourcemanager_am_max_attempts: 5
+hadoop::config::yarn_scheduler_capacity_maximum_am_resource_percent: '0.2'
+hadoop::config::yarn_scheduler_capacity_root_queues: 'default,snapshots,elastic,etl_jobs'
+hadoop::config::yarn_scheduler_capacity_queues_settings:
+  default:
+    queue_name: 'default'
+    root_queue_name: 'root.default'
+    capacity: '18.0'
+    maximum_capacity: '100'
+    maximum_applications: '150'
+    state: 'RUNNING'
+    acl_submit_applications: 'hdfs,hbase,yarn'
+    acl_administer_queue: 'hdfs,hbase,yarn'
+    user_limit_factor: '2.0'
+  elastic:
+    queue_name: 'elastic'
+    root_queue_name: 'root.elastic'
+    capacity: '2.0'
+    maximum_capacity: '30'
+    maximum_applications: '150'
+    state: 'RUNNING'
+    acl_submit_applications: 'hdfs,hbase,yarn'
+    acl_administer_queue: 'hdfs,hbase,yarn'
+    user_limit_factor: '15.0'
+  snapshots:
+    queue_name: 'snapshots'
+    root_queue_name: 'root.snapshots'
+    capacity: '20.0'
+    maximum_capacity: '100'
+    maximum_applications: '50'
+    state: 'RUNNING'
+    acl_submit_applications: 'snapshots,hdfs'
+    acl_administer_queue: 'snapshots,hdfs'
+    user_limit_factor: '2.0'
+  etl_jobs:
+    queue_name: 'etl_jobs'
+    root_queue_name: 'root.etl_jobs'
+    capacity: '60.0'
+    maximum_capacity: '90'
+    maximum_applications: '50'
+    state: 'RUNNING'
+    acl_submit_applications: 'snapshots,hdfs,hbase,yarn'
+    acl_administer_queue: 'snapshots,hdfs,hbase,yarn'
+    user_limit_factor: '2.0'
+hadoop::config::yarn_scheduler_minimum_allocation_mb: '1024'
+hadoop::config::zkfc_sshfence_params: ':10022'
+
+# hadoop::install
+hadoop::install::common_packages:
+  'cloudera-hadoop-lzo':
+    ensure: 'installed'
+  'hadoop':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+  'hadoop-0.20-mapreduce':
+    ensure: "%{hiera('hadoop::mapred_version')}"
+  'hadoop-yarn':
+    ensure: "%{hiera('hadoop::yarn_version')}"
+  'zookeeper':
+    ensure: '3.4.5+cdh5.14.0+136-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+hadoop::install::java_version: "%{hiera('hadoop::java_version')}"
+
+# hadoop::roles
+# hadoop::roles::dfsjournal
+hadoop::roles::dfsjournal::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::dfsjournal::dirdfsjournal: '/data_journal'
+hadoop::roles::dfsjournal::files_and_dirs:
+  "%{hiera('hadoop::roles::dfsjournal::dirdfsjournal')}":
+    ensure: 'directory'
+    owner: "%{hiera('hadoop::user_dfs')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0770'
+  "%{hiera('hadoop::roles::dfsjournal::dirdfsjournal')}/%{hiera('hadoop::master_cluster_dfs')}":
+    ensure: 'directory'
+    owner: "%{hiera('hadoop::user_dfs')}"
+    group: "%{hiera('hadoop::user_dfs')}"
+    mode: '0755'
+hadoop::roles::dfsjournal::packages:
+  'hadoop-hdfs-journalnode':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+# hadoop::roles::dfsmaster
+hadoop::roles::dfsmaster::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::dfsmaster::files_and_dirs:
+  '/data_master':
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_dfs')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0750'
+  '/data_master/fsimage':
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_dfs')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0700'
+hadoop::roles::dfsmaster::packages:
+  'hadoop-hdfs-namenode':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+  'hadoop-hdfs-zkfc':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+# hadoop::roles::dfsslave
+hadoop::roles::dfsslave::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::dfsslave::data_mounts: "%{alias('hadoop::data_mounts')}"
+hadoop::roles::dfsslave::data_mounts_attr:
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_dfs')}"
+    group: "%{hiera('hadoop::group')}"
+hadoop::roles::dfsslave::data_mounts_subdirs:
+  - 'hadoop-datastore'
+  - 'hadoop-datastore/dfs'
+hadoop::roles::dfsslave::packages:
+  'hadoop-hdfs-datanode':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+# hadoop::roles::flinkmanager
+hadoop::roles::flinkmanager::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+# hadoop::roles::hadoopclient
+hadoop::roles::hadoopclient::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::hadoopclient::packages:
+  'hadoop-client':
+    ensure: "%{hiera('hadoop::hadoop_version')}"
+# hadoop::roles::historyserver
+hadoop::roles::historyserver::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::historyserver::packages:
+  'hadoop-mapreduce-historyserver':
+    ensure: "%{hiera('hadoop::yarn_version')}"
+# hadoop::roles::mapredmaster
+hadoop::roles::mapredmaster::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::mapredmaster::files_and_dirs:
+  '/data_master':
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_mapred')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0700'
+  '/data_master/mapred':
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_mapred')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0700'
+  '/data_master/mapred/local':
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_mapred')}"
+    group: "%{hiera('hadoop::group')}"
+    mode: '0700'
+  '/usr/lib/hadoop-0.20-mapreduce/bin/hadoop-daemon.sh':
+    ensure: 'present'
+    group: "%{hiera('hadoop::group')}"
+    mode: '0755'
+    source: 'puppet:///modules/hadoop/hadoop-daemon.sh'
+hadoop::roles::mapredmaster::packages:
+  'hadoop-0.20-mapreduce-jobtrackerha':
+    ensure: "%{hiera('hadoop::mapred_version')}"
+  'hadoop-0.20-mapreduce-zkfc':
+    ensure: "%{hiera('hadoop::mapred_version')}"
+# hadoop::roles::mapredslave
+hadoop::roles::mapredslave::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::mapredslave::data_mounts: "%{alias('hadoop::data_mounts')}"
+hadoop::roles::mapredslave::data_mounts_attr:
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_mapred')}"
+    group: "%{hiera('hadoop::user_mapred')}"
+    mode: '0755'
+hadoop::roles::mapredslave::data_mounts_subdirs:
+  - 'hadoop-datastore'
+  - 'hadoop-datastore/local'
+hadoop::roles::mapredslave::files_and_dirs:
+  '/usr/lib/hadoop-0.20-mapreduce/bin/hadoop-daemon.sh':
+    ensure: 'present'
+    group: "%{hadoop::group')}"
+    mode: '0755'
+hadoop::roles::mapredslave::packages:
+  'hadoop-0.20-mapreduce-tasktracker':
+    ensure: "%{hiera('hadoop::mapred_version')}"
+# hadoop::roles::nodemanager
+hadoop::roles::nodemanager::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::nodemanager::data_mounts: "%{alias('hadoop::data_mounts')}"
+hadoop::roles::nodemanager::data_mounts_attr:
+    ensure: "directory"
+    owner: "%{hiera('hadoop::user_yarn')}"
+    group: "%{hiera('hadoop::user_yarn')}"
+    mode: '0755'
+hadoop::roles::nodemanager::data_mounts_subdirs:
+  - 'hadoop-datastore'
+  - 'hadoop-datastore/yarn'
+  - 'hadoop-datastore/yarn/logs'
+  - 'tmp'
+  - 'tmp/flink'
+hadoop::roles::nodemanager::packages:
+  'hadoop-yarn-nodemanager':
+    ensure: "%{hiera('hadoop::yarn_version')}"
+  'hadoop-mapreduce':
+    ensure: "%{hiera('hadoop::yarn_version')}"
+#  'mapp-yarn-am':
+#    ensure: "%{hiera('hadoop::mapp_yarn_am_version')}"
+# hadoop::roles::resourcemanager
+hadoop::roles::resourcemanager::configuration_files: "%{alias('hadoop::config::configuration_files')}"
+hadoop::roles::resourcemanager::packages:
+  'hadoop-yarn-resourcemanager':
+    ensure: "%{hiera('hadoop::yarn_version')}"
+  'hadoop-mapreduce':
+    ensure: "%{hiera('hadoop::yarn_version')}"

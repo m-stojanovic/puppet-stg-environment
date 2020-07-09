@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss} %level [%thread] [%file:%line] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="file_service" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file><%= @logback['service_file'] %></file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern><%= @logback['service_file'] %>_%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss} %level [%thread] [%file:%line] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="logstash_report"
+        class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file><%= @logback['reports_file'] %></file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern><%= @logback['reports_file'] %>-%d{yyyy-MM-dd}.gz
+            </fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+
+        <encoder
+            class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp />
+                <version />
+                <stackTrace>
+                    <fieldNames>
+                        <stackTrace>logDesc</stackTrace>
+                    </fieldNames>
+                    <throwableConverter
+                        class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                        <maxLength>2048</maxLength>
+                        <shortenedClassNameLength>20</shortenedClassNameLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+                <pattern>
+                    <pattern>
+                        {
+                        "srcAppId": "reports_1.0",
+                        "logLevel": "%level",
+                        "logTitle": "%message"
+                        }
+                    </pattern>
+                </pattern>
+
+                <mdc />
+            </providers>
+        </encoder>
+    </appender>
+
+    <logger name="org.springframework" level="error" />
+    <logger name="org.springframework.boot.context.web.ErrorPageFilter"
+        level="off" />
+
+    <root level="info">
+        <appender-ref ref="file_service"/>
+        <appender-ref ref="logstash_report" />
+    </root>
+</configuration>

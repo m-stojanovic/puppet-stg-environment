@@ -1,0 +1,6 @@
+bootstrap.servers: <%= scope['dsglobals::kafka_brokers'] %>
+zookeeper.connect: <%= scope['dsglobals::hd_zookeeper_quorum'] %>
+user.read.connection.string: zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!/services/userprofile
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>

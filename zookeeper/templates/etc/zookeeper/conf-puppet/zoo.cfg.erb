@@ -1,0 +1,24 @@
+# The number of milliseconds of each tick
+tickTime=<%= @ticktime %>
+# The number of ticks that the initial
+# synchronization phase can take
+initLimit=<%= @initlimit %>
+# The number of ticks that can pass between
+# sending a request and getting an acknowledgement
+syncLimit=<%= @synclimit %>
+# the directory where the snapshot is stored.
+dataDir=<%= @datadir %>
+#autopurge config
+autopurge.snapRetainCount=<%= @snapretaincount %>
+autopurge.purgeInterval=<%= @purgeinterval %>
+# the port at which the clients will connect
+clientPort=<%= @clientport %>
+maxClientCnxns=<%= @maxclientcnxns %>
+<% @quorum.each do |k, v| -%>
+server.<%= v %>=<%= k %>:<%= @peerport %>:<%= @leaderport %>
+<% end -%>
+
+<% if @jute_maxbuffer != 'UNSET' %>
+# The maximum size of the data that can be stored in a znode in bytes
+jute.maxbuffer=<%= @jute_maxbuffer %>
+<% end %>

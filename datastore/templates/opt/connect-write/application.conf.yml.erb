@@ -1,0 +1,40 @@
+connectApp {
+  connectevent {
+    service {
+      enabled = <%= @enabled %>
+      port = <%= @service_port %>
+      scheme = "<%= scope['datastore::zk_scheme'] %>"
+      <% if scope['datastore::api_zookeeper_quorum'] == scope['datastore::hd_zookeeper_quorum'] -%>
+      quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+      <% else %>
+      quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>","<%= scope['datastore::hd_zookeeper_quorum'] %>"]
+      <% end -%>
+      announcepath = "<%= @announce_path %>"
+      shard = <%= @shard %>
+      announcetimeout = <%= @announce_timeout %>
+      protocol = "<%= @protocol %>"
+    }
+      processor = "<%= @processor %>"
+      encoder = "<%= @encoder %>"
+    kafka {
+      topic = "<%= @topic %>"
+      brokers =  "<%= scope['datastore::kafka_brokers'] %>"
+      compression = false
+      sync = false
+      batch_size = 1000
+      required_acks = 1
+      max_retries = 3
+    }
+  }
+  announcer {
+    enabled = true
+    interval = 900
+    destination = "zk!<%= scope['datastore::hd_zookeeper_quorum'] %>!/services/registry"
+  }
+  logging {
+    log_to_file = true
+    log_to_console = false
+    log_path = "logs/"
+    default_log_level = "<%= @log_level %>"
+  }
+}

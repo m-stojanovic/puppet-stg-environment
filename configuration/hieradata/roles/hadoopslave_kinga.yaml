@@ -1,0 +1,662 @@
+---
+# Custom hadoop parameteres for kinga cluster master node
+hadoop::config::yarn_nodemanager_resource_memory_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: '400'
+
+profiles::nrpe::checks:
+  check_ethtool:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_ethtool.pl -s 1000 -i eth0
+
+collectd::plugin::genericjmx::connection:
+  datanode:
+    host: "%{hostname}"
+    service_url: 'service:jmx:rmi:///jndi/rmi://localhost:8006/jmxrmi'
+    collect: ['datanode_garbage_collector','datanode_threading','datanode_uptime','datanode_jvm_metrics','datanode_activity']
+  hbase:
+    host: "%{hostname}"
+    service_url: 'service:jmx:rmi:///jndi/rmi://localhost:10102/jmxrmi'
+    collect: ['hbase_rs_garbage_collector','hbase_rs_threading','hbase_rs_uptime','hbase_rs_jvm_metrics','hbase_rs_server','hbase_rs_ipc']
+
+collectd::plugin::genericjmx::mbean:
+  datanode_activity:
+    object_name: Hadoop:service=DataNode,name=DataNodeActivity*
+    instance_prefix: datanode_activity
+    values:
+      - {
+          mbean_type: gauge,
+          table: false,
+          instance_prefix: blocks_cached,
+          attribute: BlocksCached,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_get_local_path_info,
+          table: false,
+          attribute: BlocksGetLocalPathInfo,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_read,
+          table: false,
+          attribute: BlocksRead,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_removed,
+          table: false,
+          attribute: BlocksRemoved,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_replicated,
+          table: false,
+          attribute: BlocksReplicated,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_uncached,
+          table: false,
+          attribute: BlocksUncached,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_verified,
+          table: false,
+          attribute: BlocksVerified,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_written,
+          table: false,
+          attribute: BlocksWritten,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: blocks_read,
+          table: false,
+          attribute: BlocksRead,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: bytes_written,
+          table: false,
+          attribute: BytesWritten,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: network_errors,
+          table: false,
+          attribute: DatanodeNetworkErrors,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: flush_ops_avg_time,
+          table: false,
+          attribute: FlushNanosAvgTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: flush_ops_count,
+          table: false,
+          attribute: FlushNanosNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: fsync_ops_count,
+          table: false,
+          attribute: FsyncCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: fsync_nanos_ops_avg_time,
+          table: false,
+          attribute: FlushNanosAvgTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: fsync_nanos_ops_count,
+          table: false,
+          attribute: FsyncNanosNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: heartbeats_avg_time,
+          table: false,
+          attribute: HeartbeatsAvgTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: heartbeats_count,
+          table: false,
+          attribute: HeartbeatsNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: read_block_ops_avg_time,
+          table: false,
+          attribute: ReadBlockOpAvgTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: read_block_ops_count,
+          table: false,
+          attribute: ReadBlockOpNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: reads_from_local_client_count,
+          table: false,
+          attribute: ReadsFromLocalClient,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: reads_from_remote_client_count,
+          table: false,
+          attribute: ReadsFromRemoteClient,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: reads_from_remote_client_bytes,
+          table: false,
+          attribute: RemoteBytesRead,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: writes_from_remote_client_bytes,
+          table: false,
+          attribute: RemoteBytesWritten,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: total_read_time,
+          table: false,
+          attribute: TotalReadTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: total_write_time,
+          table: false,
+          attribute: TotalWriteTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: write_block_ops_avg_time,
+          table: false,
+          attribute: WriteBlockOpAvgTime,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: write_block_ops_count,
+          table: false,
+          attribute: WriteBlockOpNumOps,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: writes_from_local_client_count,
+          table: false,
+          attribute: WritesFromLocalClient,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: writes_from_remote_client_count,
+          table: false,
+          attribute: WritesFromRemoteClient,
+        }
+  datanode_jvm_metrics:
+    object_name: Hadoop:service=DataNode,name=JvmMetrics
+    instance_prefix: datanode_jvm_metrics
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_warns,
+          table: false,
+          attribute: LogWarn,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_fatals,
+          table: false,
+          attribute: LogFatal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_errors,
+          table: false,
+          attribute: LogError,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_commited,
+          table: false,
+          attribute: MemHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_used,
+          table: false,
+          attribute: MemHeapUsedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_max,
+          table: false,
+          attribute: MemHeapMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_max,
+          table: false,
+          attribute: MemMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_commited,
+          table: false,
+          attribute: MemNonHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_used,
+          table: false,
+          attribute: MemNonHeapUsedM,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_blocked,
+          table: false,
+          attribute: ThreadsBlocked,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_new,
+          table: false,
+          attribute: ThreadsNew,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_runnable,
+          table: false,
+          attribute: ThreadsRunnable,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_terminated,
+          table: false,
+          attribute: ThreadsTerminated,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting_timed_out,
+          table: false,
+          attribute: ThreadsTimedWaiting,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting,
+          table: false,
+          attribute: ThreadsWaiting,
+        }
+  datanode_threading:
+    object_name: java.lang:type=Threading
+    instance_prefix: datanode_threading
+    values:
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_cpu_time,
+          table: false,
+          attribute: CurrentThreadCpuTime,
+        }
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_user_time,
+          table: false,
+          attribute: CurrentThreadUserTime,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix daemon_thread_count,
+          table false,
+          attribute: DaemonThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          Instance_prefix: peak_thread_count,
+          table: false,
+          attribute: PeakThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix thread_count,
+          table: false,
+          attribute: ThreadCount,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: total_started_thread_count,
+          table: false,
+          attribute: TotalStartedThreadCount,
+        }
+  datanode_uptime:
+    object_name: java.lang:type=Runtime
+    instance_prefix: datanode_runtime
+    values:  
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: uptime,
+          table: false,
+          attribute: Uptime,
+        }
+  hbase_rs_garbage_collector:
+    object_name: java.lang:type=GarbageCollector,*
+    instance_prefix: hbase_rs_gc
+    instance_from: ['name']
+    values: 
+      - {
+           mbean_type: invocations,
+           instance_prefix: collection_count,
+           table: false,
+           attribute: CollectionCount,
+        }
+      - {
+           mbean_type: total_time_in_ms,
+           instance_prefix: collection_time,
+           table: false,
+           attribute: CollectionTime,
+        }
+  datanode_garbage_collector:
+   object_name: java.lang:type=GarbageCollector,*
+   instance_prefix: datanode_gc-
+   instance_from: ['name']
+   values:
+      - {
+          mbean_type: invocations,
+          instance_prefix collection_count,
+          table: false,
+          attribute: CollectionCount,
+        }
+      - {
+          mbean_type total_time_in_ms,
+          instance_prefix: collection_time, 
+          table: false,
+          attribute: CollectionTime,
+        }
+  hbase_rs_ipc:
+    object_name: Hadoop:service=HBase,name=RegionServer,sub=IPC
+    instance_prefix: hbase_rs_ipc
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: queue_size,
+          table: false,
+          attribute: queueSize,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: sent_bytes,
+          table: false,
+          attribute: sentBytes,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: received_bytes,
+          table: false,
+          attribute: receivedBytes,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: open_connections,
+          table: false,
+          attribute: numOpenConnections,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: exceptions,
+          table: false,
+          attribute: exceptions,
+    }
+  hbase_rs_jvm_metrics:
+    object_name: Hadoop:service=HBase,name=JvmMetrics
+    instance_prefix: hbase_rs_jvm_metrics
+    values: 
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_warns,
+          table: false,
+          attribute: LogWarn,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_fatals,
+          table: false,
+          attribute: LogFatal,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: logged_errors,
+          table: false,
+          attribute: LogError,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_commited,
+          table: false,
+          attribute: MemHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_used,
+          table: false,
+          attribute: MemHeapUsedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_heap_max,
+          table: false,
+          attribute: MemHeapMaxM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_max,
+          table: false,
+          attribute: MemMaxM,
+        } 
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_commited,
+          table: false,
+          attribute: MemNonHeapCommittedM,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: memory_non_heap_used,
+          table: false,
+          attribute: MemNonHeapUsedM,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_blocked,
+          table: false,
+          attribute: ThreadsBlocked,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_new,
+          table: false,
+          attribute: ThreadsNew,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_runnable,
+          table: false,
+          attribute: ThreadsRunnable,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_terminated,
+          table: false,
+          attribute: ThreadsTerminated,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting_timed_out,
+          table: false,
+          attribute: ThreadsTimedWaiting,
+        }
+      - {
+          mbean_type: threads,
+          instance_prefix: threads_waiting,
+          table: false,
+          attribute: ThreadsWaiting,
+        }
+  hbase_rs_server:
+    object_name: Hadoop:service=HBase,name=RegionServer,sub=Server
+    instance_prefix: hbase_rs_server
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: store_file_count,
+          table: false,
+          attribute: storeFileCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: mem_store_size,
+          table: false,
+          attribute: memStoreSize,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: store_file_size,
+          table: false,
+          attribute: storeFileSize,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: total_request_count,
+          table: false,
+          attribute: totalRequestCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: read_request_count,
+          table: false,
+          attribute: readRequestCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: write_request_count,
+          table: false,
+          attribute: writeRequestCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_count,
+          table: false,
+          attribute: blockCacheCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_free_size,
+          table: false,
+          attribute: blockCacheFreeSize,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_size,
+          table: false,
+          attribute: blockCacheSize,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_hit_count,
+          table: false,
+          attribute: blockCacheHitCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_miss_count,
+          table: false,
+          attribute: blockCacheMissCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: block_cache_eviction_count,
+          table: false,
+          attribute: blockCacheEvictionCount,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: compaction_queue_length,
+          table: false,
+          attribute: compactionQueueLength,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: flush_queuelength,
+          table: false,
+          attribute: flushQueueLength,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: PauseTimeWithGc_max,
+          table: false,
+          attribute: PauseTimeWithGc_max,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: PauseTimeWithoutGc_max,
+          table: false,
+          attribute: PauseTimeWithoutGc_max,
+        }
+  hbase_rs_threading:
+    object_name: java.lang:type=Threading
+    instance_prefix: hbase_rs_threading
+    values:      
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_cpu_time,
+          table: false,
+          attribute: CurrentThreadCpuTime,
+        }          
+      - {       
+          mbean_type: total_time_in_ms,
+          instance_prefix: thread_user_time,
+          table: false,
+          attribute: CurrentThreadUserTime,
+        }      
+      - {          
+          mbean_type: threads,
+          instance_prefix: daemon_thread_count,
+          table: false,
+          attribute: DaemonThreadCount,
+        }          
+      - {          
+          mbean_type: threads,
+          instance_prefix: peak_thread_count,
+          table: false,
+          attribute: PeakThreadCount,
+        }         
+      - {         
+          mbean_type: threads,
+          instance_prefix: thread_count,
+          table: false,
+          attribute: ThreadCount,
+        }          
+      - {          
+          mbean_type: threads,
+          instance_prefix: total_started_thread_count,
+          table: false,
+          attribute: TotalStartedThreadCount,
+        }
+  hbase_rs_uptime:
+    object_name: java.lang:type=Runtime
+    instance_prefix: hbase_rs_runtime
+    values:
+      - {
+          mbean_type: total_time_in_ms,
+          instance_prefix: uptime,
+          table: false,
+          attribute: Uptime,
+        } 

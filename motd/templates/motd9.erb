@@ -1,0 +1,18 @@
+ .     *        .    *       ________________ _      .    ____      *
+     *     .       .     .  <-_______________|*) .  ___==/    \==___
+                     . *     ~.      *   | |  ~  --==================--
+   .    *     *                 .      . | |  *  /  ^/  --=====--
+    .     .     .         .        ______|_|____/___/     .        .
+  .   *  .       *   .      ()   . ==__        ....^T/_      .
+      .      .      .*      .    .  *  --___________|\~  .     *.    .
+  .              .        .   *    .            .        *     .
+-------------------------------------------------------------------------------
+-------------------- This machine is maintained by Puppet! --------------------
+--------------       Unauthorized users will face Pickard       ---------------
+-------------------------------------------------------------------------------
+Operating system: <%= @facts['os']['distro']['id'] %> - <%= @facts['os']['distro']['codename'] %> - <%= @facts['os']['distro']['release']['full'] %>
+Hostname: <%= @facts['networking']['fqdn'] %>
+Puppet environment: <%= @facts['agent_specified_environment'] %>
+Puppet version: <%= @facts['puppetversion'] %>
+Uptime: <%= @facts['system_uptime']['uptime'] %>
+Memory: <%= @facts['memory']['system']['total'] %>

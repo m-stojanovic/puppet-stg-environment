@@ -1,0 +1,49 @@
+---
+profiles::baseprofile::packages:
+  webtrekk-truststore-public:
+    version: 1.0.0-1
+    pin: true
+# Common Hadoop limits
+limits::entries:
+  'hbase/nofile':
+    both: unlimited
+  'hbase/nproc':
+    both: 32000
+  'hbase/memlock':
+    both: unlimited
+  'hdfs/nofile':
+    both: 262144
+  'hdfs/nproc':
+    both: 65536
+  'mapred/nofile':
+    both: 262144
+  'mapred/nproc':
+    both: 65536
+  'yarn/nofile':
+    both: 524288
+  'yarn/nproc':
+    both: 65536
+    
+sysctl::entries:
+  net.core.rmem_max:
+    value: 16777216
+  net.core.wmem_max:
+    value: 16777216
+  net.ipv4.tcp_max_syn_backlog: 
+    value: 4096
+  net.ipv4.tcp_fin_timeout:
+    value: 15
+    
+profiles::nrpe::checks:
+  check_hbase_regionserver:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a regionserver
+  check_yarn_nodemanager:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a yarn-nodemanager
+  check_zombie_yarn_container:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_long_procs.pl -c 0 -p YarnChild -n grep
+  check_hadoop_datanode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a datanode

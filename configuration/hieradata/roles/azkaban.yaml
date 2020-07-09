@@ -1,0 +1,101 @@
+---
+profiles::nrpe::checks:
+  check_camus:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_camus.sh
+  check_azkaban_job_batch_camus_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration batch camus 1800 3600
+  check_azkaban_job_batch_camus_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures batch camus 1 3
+  check_azkaban_job_batch_compaction_user_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration batch "compaction-user" 1800 3600
+  check_azkaban_job_batch_compaction_user_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures batch "compaction-user" 1 3
+  check_azkaban_job_batch_compaction_group_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration batch "compaction-group" 1800 3600
+  check_azkaban_job_batch_compaction_group_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures batch "compaction-group" 1 3
+  check_azkaban_job_batch_compaction_membership_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration batch "compaction-membership" 1800 3600
+  check_azkaban_job_batch_compaction_membership_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures batch "compaction-membership" 1 3
+  check_azkaban_job_batch_userresponses_userresponse_snapshot_creator_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration "batch-userresponses" "userresponse-snapshot-creator" 1800 3600
+  check_azkaban_job_batch_userresponses_userresponse_snapshot_creator_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures "batch-userresponses" "userresponse-snapshot-creator" 1 3
+  check_azkaban_job_batch_compaction_relateddata_duration:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh duration batch "compaction-relateddata" 1800 3600
+  check_azkaban_job_batch_compaction_relateddata_failures:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_azkaban_job.sh failures batch "compaction-relateddata" 1 3
+
+azkaban::tools::speedoffsetloader::package: 'speed-offset-loader'
+azkaban::tools::speedoffsetloader::version: '2.0.14-1'
+azkaban::tools::speedoffsetloader::configfiles:
+  '/opt/speed-offset-loader/conf/speed-offset-loader.properties':
+    template: "opt/speed-offset-loader/conf/speed-offset-loader.properties.erb"
+    config:
+      com.teradata.speedlayer.offset.loader.topics: 'user,membership,userresponse,group,mobileresponse,dmpresponse'
+      com.teradata.speedlayer.offset.loader.topic.user.compactionMetaRootFolder: '/mds/facts/user/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.user.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.membership.compactionMetaRootFolder: '/mds/facts/membership/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.membership.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.userresponse.compactionMetaRootFolder: '/mds/snapshots/userresponse/meta'
+      com.teradata.speedlayer.offset.loader.topic.userresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.group.compactionMetaRootFolder: '/mds/facts/group/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.group.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.mobileresponse.compactionMetaRootFolder: '/mds/facts/mobileresponse/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.mobileresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.mobileresponse.daysToSearch: 90
+      com.teradata.speedlayer.offset.loader.topic.dmpresponse.compactionMetaRootFolder: '/mds/facts/dmpresponse/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.dmpresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      com.teradata.speedlayer.offset.loader.topic.dmpresponse.daysToSearch: 7
+      com.teradata.speedlayer.offset.loader.finishTimeLocation: '/mds/snapshots/user/meta/meta.seq'
+      com.teradata.speedlayer.offset.loader.timezone: 'Europe/Berlin'
+      com.teradata.speedlayer.offset.loader.catchupConsumerGroup: 'elasticsearch-user-tmp'
+  '/opt/speed-offset-loader/conf/speed-offset-loader-rd.properties':
+    template: "opt/speed-offset-loader/conf/speed-offset-loader.properties.erb"
+    config:
+      com.teradata.speedlayer.offset.loader.topics: 'relateddata'
+      com.teradata.speedlayer.offset.loader.topic.relateddata.compactionMetaRootFolder: '/mds/facts/relateddata/compaction/meta'
+      com.teradata.speedlayer.offset.loader.topic.relateddata.originalConsumerGroups: 'relateddata-hbase'
+      com.teradata.speedlayer.offset.loader.timezone: 'Europe/Berlin'
+      com.teradata.speedlayer.offset.loader.catchupConsumerGroup: 'relateddata-hbase-tmp'
+
+azkaban::tools::speedoffsetwatcher::package: 'speed-offset-watcher'
+azkaban::tools::speedoffsetwatcher::version: '2.0.10-1'
+azkaban::tools::speedoffsetwatcher::configfiles:
+  '/opt/speed-offset-watcher/conf/speed-offset-watcher.properties':
+    template: "opt/speed-offset-watcher/conf/speed-offset-watcher.properties.erb"
+    config:
+      speed.offset.watcher.execution.delay.period: 5
+      speed.offset.watcher.kafka.topics: 'user,membership,userresponse,group,mobileresponse,dmpresponse'
+      speed.offset.watcher.topic.user.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.topic.membership.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.topic.group.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.topic.userresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.topic.mobileresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.topic.dmpresponse.originalConsumerGroups: 'elasticsearch-user-prime,elasticsearch-user-prime-bigtenants2'
+      speed.offset.watcher.kafka.offsetdifftolerance: 20000
+      speed.offset.watcher.log.level: 'info'
+      speed.offset.watcher.catchupConsumerGroup: 'elasticsearch-user-tmp'
+  '/opt/speed-offset-watcher/conf/speed-offset-watcher-rd.properties':
+    template: "opt/speed-offset-watcher/conf/speed-offset-watcher.properties.erb"
+    config:
+      speed.offset.watcher.execution.delay.period: 5
+      speed.offset.watcher.kafka.topics: 'relateddata'
+      speed.offset.watcher.topic.relateddata.originalConsumerGroups: 'relateddata-hbase'
+      speed.offset.watcher.kafka.offsetdifftolerance: 20000
+      speed.offset.watcher.log.level: 'info'
+      speed.offset.watcher.catchupConsumerGroup: 'relateddata-hbase-tmp'

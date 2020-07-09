@@ -1,0 +1,491 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+
+
+    <property>
+            <name>mapreduce.framework.name</name>
+            <value><%= scope['hadoop::config::mapreduce_framework_name'] %></value>
+    </property>
+    <property>
+            <name>mapred.job.tracker</name>
+            <value><%= scope['hadoop::master_cluster_mr'] %></value>
+            <description>
+                    54311 was old port
+            </description>
+    </property>
+
+	<property>
+        	<name>mapred.jobtrackers.<%= scope['hadoop::master_cluster_mr'] %></name>
+	        <value><%= scope['hadoop::config::master_jobtracker1_alias'] %>,<%= scope['hadoop::config::master_jobtracker2_alias'] %></value>
+	</property>
+	<!--
+	<property>
+	        <name>mapred.jobtracker.rpc-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker1_alias'] %></name>
+        	<value><%= scope['hadoop::config::master_jobtracker1'] %>:54310</value>
+	</property>
+
+	<property>
+	        <name>mapred.jobtracker.rpc-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker2_alias'] %></name>
+        	<value><%= scope['hadoop::config::master_jobtracker2'] %>:54310</value>
+	</property>
+    -->
+	<property>
+       		<name>mapred.job.tracker.http.address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker1_alias'] %></name>
+		<value>0.0.0.0:50030</value>
+	</property>
+
+	<property>
+		<name>mapred.job.tracker.http.address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker2_alias'] %></name>
+		<value>0.0.0.0:50030</value>
+	</property>
+
+	<property>
+        	<name>mapred.ha.jobtracker.rpc-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker1_alias'] %></name>
+		<value><%= scope['hadoop::config::master_jobtracker1'] %>:54311</value>
+	</property>
+
+	<property>
+		<name>mapred.ha.jobtracker.rpc-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker2_alias'] %></name>
+		<value><%= scope['hadoop::config::master_jobtracker2'] %>:54311</value>
+	</property>
+
+	<property>
+		<name>mapred.ha.jobtracker.http-redirect-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker1_alias'] %></name>
+		<value><%= scope['hadoop::config::master_jobtracker1'] %>:50030</value>
+	</property>
+
+	<property>
+		<name>mapred.ha.jobtracker.http-redirect-address.<%= scope['hadoop::master_cluster_mr'] %>.<%= scope['hadoop::config::master_jobtracker2_alias'] %></name>
+		 <value><%= scope['hadoop::config::master_jobtracker2'] %>:50030</value>
+	</property>
+
+	<property>
+		<name>mapred.ha.automatic-failover.enabled</name>
+		<value>true</value>
+	</property>
+
+	<property>
+		<name>mapred.jobtracker.restart.recover</name>
+		<value>true</value>
+	</property>
+
+	<property>
+		<name>mapred.job.tracker.persist.jobstatus.active</name>
+		<value>true</value>
+	</property>
+
+	<property>
+		<name>mapred.job.tracker.persist.jobstatus.hours</name>
+		<value>6</value>
+	</property>
+
+	<property>
+		<name>mapred.job.tracker.persist.jobstatus.dir</name>
+		<value>/jobtracker/jobsInfo</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.proxy.provider.<%= scope['hadoop::master_cluster_mr'] %></name>
+		<value>org.apache.hadoop.mapred.ConfiguredFailoverProxyProvider</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.max.attempts</name>
+		<value>15</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.sleep.base.millis</name>
+		 <value>500</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.sleep.max.millis</name>
+		<value>1500</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.connection.retries</name>
+		<value>0</value>
+	</property>
+
+	<property>
+		<name>mapred.client.failover.connection.retries.on.timeouts</name>
+		<value>0</value>
+	</property>
+
+	<property>
+		<name>mapred.ha.fencing.methods</name>
+		<value>shell(/bin/true)</value>
+	</property>
+
+        <property>
+                <name>mapred.ha.fencing.ssh.private-key-files</name>
+                <value>/var/lib/hdfs/.ssh/id_rsa</value>
+        </property>
+
+        <property>
+                <name>mapred.ha.fencing.ssh.connect-timeout</name>
+                <value>15000</value>
+                <description>
+                        SSH connection timeout, in milliseconds, to use with the builtin sshfence fencer.
+                </description>
+        </property>
+
+	<property>
+		<name>mapred.ha.zkfc.port</name>
+		<value>54381</value>
+	</property>
+
+	<property>
+<!-- <name>mapreduce.cluster.local.dir</name> -->
+		<name>mapred.local.dir</name>
+		<!--<value>/DATA1/hadoop-datastore/mapred/local,/DATA2/hadoop-datastore/mapred/local,/DATA3/hadoop-datastore/mapred/local,/DATA4/hadoop-datastore/mapred/local,/data_master/mapred/local</value>-->
+		<value><%= scope['hadoop::clustermounts'] %>,/data_master/mapred/local</value>
+		<description>
+			The local directory where MapReduce stores intermediate
+			data files.  May be a comma-separated list of
+			directories on different devices in order to spread disk i/o.
+			Directories that do not exist are ignored.
+		</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.map.speculative</name> -->
+		<name>mapred.map.tasks.speculative.execution</name>
+		<value>false</value>
+		<description>
+			If true, then multiple instances of some map tasks
+			may be executed in parallel.
+			This may lead to too much overhead on small clusters
+		</description>
+	</property>
+	<property>
+		<name>mapreduce.jobtracker.http.address</name>
+		<value>0.0.0.0:50030</value>
+		<description>
+			The job tracker http server address and port the server will listen on.
+			If the port is 0 then the server will start on a free port.
+		</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.job.reduces</name> -->
+		<name>mapred.reduce.tasks</name>
+		<value>32</value>
+		<description>The default number of reduce tasks per job</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.jobtracker.system.dir</name> -->
+		<name>mapred.system.dir</name>
+		<value>/mapred/system</value>
+		<description>
+			The shared directory where MapReduce stores control files.
+		</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.tasktracker.reduce.tasks.maximum</name> -->
+		<name>mapred.tasktracker.reduce.tasks.maximum</name>
+		<value>3</value>
+		<description>
+			The maximum number of reduce tasks that will be run simultaneously by a task tracker.
+			For hdp1000 we increased from 2 to 5 as in total we want to have 8 map+reduce
+		</description>
+	</property>
+	<property>
+		<name>mapred.jobtracker.completeuserjobs.maximum</name>
+		<value>50</value>
+		<description>
+			The maximum number of complete jobs per user to keep around
+			before delegating them to the job history.
+		</description>
+	</property>
+<!--
+	<property>
+		<name>mapred.child.java.opts</name>
+		<value>-Xmx2048m</value>
+		<description>
+			Java opts for the task tracker child processes.
+			The following symbol, if present, will be interpolated: @taskid@ is replaced
+			by current TaskID. Any other occurrences of '@' will go unchanged.
+			For example, to enable verbose gc logging to a file named for the taskid in
+			/tmp and to set the heap maximum to be a gigabyte, pass a 'value' of:
+			-Xmx1024m -verbose:gc -Xloggc:/tmp/@taskid@.gc
+			this is suggestion from cloudera config
+		</description>
+	</property>
+
+	<property>
+		<name>mapred.child.ulimit</name>
+		<value>5312512</value>
+		<final>true</final>
+		<description>
+			The maximum virtual memory, in KB, of a process launched by the
+			Map-Reduce framework. This can be used to control both the Mapper/Reducer
+			tasks and applications using Hadoop Pipes, Hadoop Streaming etc.
+			By default it is left unspecified to let cluster admins control it via
+			limits.conf and other such relevant mechanisms.
+
+			Note: mapred.child.ulimit must be greater than or equal to the -Xmx passed to
+			JavaVM, else the VM might not start.
+
+			this is suggestion from cloudera config
+		</description>
+	</property>
+-->
+	<property>
+<!-- <name>mapreduce.jobtracker.handler.count</name> -->
+		<name>mapred.job.tracker.handler.count</name>
+		<value>32</value>
+		<final>true</final>
+	</property>
+	<property>
+<!-- <name>mapreduce.reduce.shuffle.parallelcopies</name> -->
+		<name>mapred.reduce.parallel.copies</name>
+		<value>8</value>
+		<description>
+			The default number of parallel transfers run by reduce
+			during the copy(shuffle) phase.
+		</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.reduce.speculative</name> -->
+		<name>mapred.reduce.tasks.speculative.execution</name>
+		<value>false</value>
+		<description>
+			If true, then multiple instances of some reduce tasks
+			may be executed in parallel.
+		</description>
+	</property>
+	<property>
+<!-- <name>mapreduce.tasktracker.map.tasks.maximum</name> -->
+		<name>mapred.tasktracker.map.tasks.maximum</name>
+		<value>6</value>
+		<final>true</final>
+		<description>
+			The maximum number of map tasks that will be run simultaneously by a task tracker.
+			For hdp1000 we increased from 2 to 5 as in total we want to have 8 map+reduce
+		</description>
+	</property>
+
+<% if scope['hadoop::config::enable_fairscheduler'] %>
+    <property>
+        <name>mapred.queue.names</name>
+        <value>default,customer</value>
+    </property>
+
+	<property>
+	<!-- <name>mapreduce.jobtracker.taskscheduler</name> -->
+	<name>mapred.jobtracker.taskScheduler</name>
+		<value>org.apache.hadoop.mapred.FairScheduler</value>
+		<description>The class responsible for scheduling the tasks.</description>
+	</property>
+
+	<property>
+		<name>mapred.fairscheduler.allocation.file</name>
+		<value>/etc/hadoop/conf/fair-scheduler.xml</value>
+	</property>
+
+	<property>
+		<name>mapred.fairscheduler.poolnameproperty</name>
+		<value>mapred.job.queue.name</value>
+	</property>
+
+	<property>
+		<name>mapred.fairscheduler.weightadjuster</name>
+		<value>org.apache.hadoop.mapred.NewJobWeightBooster</value>
+	</property>
+
+	<property>
+		<name>mapred.fairscheduler.preemption</name>
+		<value>true</value>
+	</property>
+
+	<% if scope['hadoop::config::preemption_interval'] %>
+		<property>
+			<name>mapred.fairscheduler.preemption.interval</name>
+			<value><%= scope['hadoop::config::preemption_interval'] %></value>
+		</property>
+	<% end %> <%# preemption_interval %>
+
+	<% if scope['hadoop::config::update_interval'] %>
+		<property>
+			<name>mapred.fairscheduler.update.interval</name>
+			<value><%= scope['hadoop::config::update_interval'] %></value>
+		</property>
+	<% end %> <%# update_interval %>
+
+	<property>
+		<name>mapred.fairscheduler.sizebasedweight</name>
+		<value>true</value>
+	</property>
+
+	<% if scope['hadoop::config::preemption_onlylog'] %>
+		<property>
+			<name>mapred.fairscheduler.preemption.only.log</name>
+			<value>true</value>
+		</property>
+	<% end %> <%# preemption_onlylog %>
+
+	<% if scope['hadoop::config::uber_logging'] %>
+		<property>
+			<name>mapred.fairscheduler.eventlog.enabled</name>
+			<value>true</value>
+		</property>
+	<% end %> <%# uber_logging %>
+
+<% end %> <%# enable_fairscheduler %>
+
+	<property>
+    	<name>mapreduce.output.fileoutputformat.compress</name>
+        <value>true</value>
+        <description>
+                Should the job outputs be compressed?
+        </description>
+    </property>
+	<property>
+	<name>mapred.output.compress</name>
+		<value>true</value>
+		<description>
+			Should the job outputs be compressed?
+		</description>
+	</property>
+	<property>
+		<name>mapred.compress.map.output</name>
+		<value>true</value>
+		<description>
+			Should the outputs of the maps be compressed before being
+			sent across the network. Uses SequenceFile compression.
+		</description>
+	</property>
+    <property>
+		<name>mapreduce.map.output.compress</name>
+        <value>true</value>
+        <description>
+                Should the outputs of the maps be compressed before being
+                sent across the network. Uses SequenceFile compression.
+        </description>
+    </property>
+
+	<property>
+		<name>mapreduce.output.fileoutputformat.compress.type</name>
+		<value>BLOCK</value>
+		<description>
+			If the job outputs are to compressed as SequenceFiles, how should
+			they be compressed? Should be one of NONE, RECORD or BLOCK.
+		</description>
+	</property>
+    <property>
+        <name>mapred.output.compression.type</name>
+        <value>BLOCK</value>
+        <description>
+                If the job outputs are to compressed as SequenceFiles, how should
+                they be compressed? Should be one of NONE, RECORD or BLOCK.
+        </description>
+    </property>
+
+	<property>
+		<name>mapred.output.compression.codec</name>
+		<value>org.apache.hadoop.io.compress.SnappyCodec</value>
+		<description>
+			If the job outputs are compressed, how should they be compressed?
+		</description>
+	</property>
+
+    <property>
+	<name>mapreduce.output.fileoutputformat.compress.codec</name>
+        <value>org.apache.hadoop.io.compress.SnappyCodec</value>
+        <description>
+                If the job outputs are compressed, how should they be compressed?
+        </description>
+    </property>
+
+    <property>
+        <name>mapreduce.map.output.compress.codec</name>
+        <value>org.apache.hadoop.io.compress.SnappyCodec</value>
+    </property>
+
+	<property>
+<!-- <name>mapreduce.tasktracker.http.threads</name> -->
+		<name>tasktracker.http.threads</name>
+		<value>80</value>
+		<final>true</final>
+	</property>
+	<property>
+<!-- <name>mapreduce.task.io.sort.mb</name> -->
+		<name>io.sort.mb</name>
+		<value>250</value>
+		<final>true</final>
+	</property>
+	<property>
+<!-- <name>mapreduce.task.io.sort.factor</name> -->
+		<name>io.sort.factor</name>
+		<value>25</value>
+		<final>true</final>
+	</property>
+	<property>
+		<name>mapred.child.env</name>
+		<value>JAVA_LIBRARY_PATH=/usr/lib/hadoop/lib/native/Linux-amd64-64</value>
+	</property>
+
+<!-- MA 18/09/2013 Increased number of attemps from 4 to 6 -->
+	<property>
+		<name>mapred.map.max.attempts</name>
+		<value>6</value>
+		<description>Expert: The maximum number of attempts per map task.
+		   In other words, framework will try to execute a map task these many number
+		   of times before giving up on it.
+		</description>
+	</property>
+
+	<property>
+		<name>mapred.reduce.max.attempts</name>
+		<value>6</value>
+		<description>Expert: The maximum number of attempts per reduce task.
+		   In other words, framework will try to execute a reduce task these many number
+		   of times before giving up on it.
+		</description>
+	</property>
+<!-- END MA 18/09/2013 Increased number of attemps from 4 to 6 -->
+
+<!-- memory settings added 22.08.2014 matthias -->
+    <property>
+        <name>mapreduce.map.memory.mb</name>
+        <value><%= scope['hadoop::config::mapreduce_map_memory_mb'] %></value>
+        <description>
+        </description>
+    </property>
+    <property>
+        <name>mapreduce.reduce.memory.mb</name>
+        <value><%= scope['hadoop::config::mapreduce_reduce_memory_mb'] %></value>
+        <description>
+        </description>
+    </property>
+    <property>
+       <name>mapreduce.map.java.opts</name>
+        <value><%= scope['hadoop::config::mapreduce_map_java_opts'] %></value>
+        <description>XMX
+        </description>
+    </property>
+    <property>
+        <name>mapreduce.reduce.java.opts</name>
+        <value><%= scope['hadoop::config::mapreduce_reduce_java_opts'] %></value>
+        <description>
+        </description>
+    </property>
+
+<!-- Directory used by history server, need to create this directory and history directory inside with proper permissions-->
+	<property>
+	    <name>yarn.app.mapreduce.am.staging-dir</name>
+	    <value><%= scope['hadoop::config::yarn_app_mapreduce_am_staging_dir'] %></value>
+	</property>
+
+        <property>
+            <name>mapreduce.reduce.shuffle.input.buffer.percent</name>
+            <value>0.2</value>
+        </property>
+
+
+</configuration>

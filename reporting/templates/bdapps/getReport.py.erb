@@ -1,0 +1,150 @@
+#!/usr/bin/python
+
+#Gathers data and creates report regarding bigdata app version on servers
+#Schedule on user account allowed to connect to hosts - make sure that connection can be initiated from host
+
+import sys
+import subprocess
+import re
+import datetime
+
+# generate list of hosts from /etc/hosts file
+def gethosts():
+    
+    hostexception = ['dshdc1100.muc.domeus.com','dshdc200.muc.domeus.com']
+    filter = re.compile('.*muc.domeus.com')
+    hosts = []
+
+    try:
+        with open('/etc/hosts','r') as file:
+            data = file.read()
+            if not data:
+                exit()
+
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        exit()
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        exit()
+
+    data = data.split('\n')
+
+    for entry in data:
+        if not entry:
+            continue
+        if filter.match(entry):
+            if entry.strip().split()[1] in hostexception:
+                continue
+            hosts.append(entry.split()[1])
+
+    return hosts
+
+# execute ssh command
+def sshcmd (host, command):
+
+    ssh = subprocess.Popen(["ssh","-o ConnectTimeout=5","-o BatchMode=yes","-o StrictHostKeyChecking=no", host , command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    err = ssh.stderr.readlines()
+
+    if not err:
+        result = ssh.stdout.readlines()
+        return result
+    else:
+        return '-1'
+
+def getData():
+
+    hosts = gethosts()
+    result = {}
+
+    for entry in hosts:
+        cmd = sshcmd(entry, 'dpkg-query -l | egrep "azkaban|speedlayer|flink|datastore|etl|selection-engine"')
+        if not cmd:
+            result[entry] = 'NotFound'
+            continue
+        if cmd == '-1':
+            result[entry] = 'ConnectionError'
+            continue
+        result[entry] = cmd
+
+    return result
+
+# Generate report from existing data
+def getReport():
+
+    data = getData()
+
+    if not data:
+        print "No data to process"
+        exit
+
+
+    packages = []
+
+    # get list of soft that will define table headers
+    for host in data:
+        if data[host] == 'NotFound' or data[host] == 'ConnectionError':
+            continue
+        for soft in data[host]:
+            if soft.strip().split()[1] not in packages:
+                packages.append(soft.strip().split()[1])
+
+    packages = sorted(packages)
+
+    # generateass="table table-stripedtable class="table table-stripedreport
+    report = open("report.html","w+")
+    report.write('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n')
+    report.write("<HTML>\n")
+    report.write("<HEAD>\n")
+    report.write("<STYLE>\n")
+    report.write("table thead {position: sticky; top: 0; background: #fff;}\n")
+    report.write("</STYLE>")
+    report.write("<TITLE>BIGDATA packages report</TITLE>\n")
+    report.write("<BODY>\n")
+    report.write("<TABLE BORDER=1>\n")
+    report.write("<div><thead>\n")
+    report.write("<TR>\n")
+    report.write("<TH>%s</TH>" % datetime.datetime.now().strftime("%Y %B %d"))
+
+    for s in packages:
+        report.write("<TH BGCOLOR=\"#797986\">%s</TH>" % s)
+
+    report.write("</TR>\n")
+    report.write("</thead></div>\n")
+
+    # to merge cells across whole data
+    span = len(packages)
+
+    for host in sorted(data):
+        if data[host] == 'NotFound':
+            continue
+        if data[host] == 'ConnectionError':
+            report.write("<TR><TD BGCOLOR=\"#9f8f60\" ALIGN=CENTER>%s</TD><TD COLSPAN=%d ALIGN=CENTER>Connection error</TD></TR>\n" % (host,span))
+            continue
+
+        report.write("<TR><TD ALIGN=CENTER BGCOLOR=\"#9f8f60\">%s</TD>" % host)
+	
+	# for each package known check host contains this packages - if yes break loop, add cell with version and move to next package, if not insert empty cell
+        for package in packages:
+            for soft in data[host]:
+                if package == soft.strip().split()[1]:
+                    ver = soft.strip().split()[2]
+                    break
+                else:
+                    ver = None
+
+            if not ver:
+                report.write("<TD></TD>")
+            else:
+                report.write("<TD ALIGN=CENTER>%s</TD>" % ver)
+
+
+        report.write("</TR>\n")
+
+    report.write("</TABLE>\n")
+    report.write("</BODY>\n")
+    report.write("</HTML>\n")
+    report.close
+
+getReport()
+subprocess.Popen(["scp","report.html","<%= @targetlocation %>"]).wait()

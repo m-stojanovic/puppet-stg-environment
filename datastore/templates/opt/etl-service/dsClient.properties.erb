@@ -1,0 +1,4 @@
+<% @settings.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+datastore.relateddata.write.connection.string = zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!/services/relateddataevent

@@ -1,0 +1,28 @@
+---
+apt::sources:
+  "debian_wheezy_mapp":
+    location: http://image-priv.muc.domeus.com/apt/dsdebrepo/
+    architecture: amd64,all
+    release: mapp
+    repos: main
+    key:
+      id: 992E4D14E3BC7F71A59AF48AA40EAA8781EDE7B0
+      source: http://image-priv.muc.domeus.com/apt/repo-keys/dsdebrepo.gpg.key
+  "debian_wheezy_update":
+    location: http://image-priv.muc.domeus.com/apt/debian
+    release: "wheezy-updates"
+    repos: main contrib non-free
+  "debian_wheezy_cloudera_cdh5_14_0":
+    location: http://image-priv.muc.domeus.com/apt/archive.cloudera.com/cdh5/debian/wheezy/amd64/cdh
+    release: wheezy-cdh5.14.0
+    repos: contrib
+    key:
+      id: F36A89E33CC1BD0F71079007327574EE02A818DD
+      source: http://image-l3.muc.domeus.com/apt/repo-keys/cloudera.gpg
+  "debian_wheezy_dell":
+    location: http://image-priv.muc.domeus.com/apt/omsa-debian
+    release: wheezy
+    repos: openmanage
+    key:
+      id: 42550ABD1E80D7C1BC0BAD851285491434D8786F
+      source: http://image-priv.muc.domeus.com/apt/omsa-debian/pubkey.gpg

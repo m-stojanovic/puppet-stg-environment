@@ -1,0 +1,19 @@
+[Unit]
+Description=Azkaban Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=azkaban
+Group=azkaban
+ExecStart=/opt/azkaban-web-server/bin/start-web.sh
+ExecStop=/opt/azkaban-web-server/bin/shutdown-web.sh
+TimeoutStopSec=180
+Restart=no
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=azkaban-web-server
+
+[Install]
+WantedBy=multi-user.target
+

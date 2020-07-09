@@ -1,0 +1,5 @@
+[Service]
+LimitNOFILE=<%= @nofiles_ulimit %>
+Environment="KAFKA_JVM_PERFORMANCE_OPTS=<%= @jvm_performance_opts %>"
+Environment="KAFKA_HEAP_OPTS=<%= @heap_opts %>"
+Environment="JMX_PORT=<%= @jmx_port %>"

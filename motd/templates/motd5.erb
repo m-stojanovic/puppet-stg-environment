@@ -1,0 +1,20 @@
+                        _--~~| |~~--_
+                       /     | |   \ \
+                      |      |      | |
+                     |       | |       |
+                     |       |         |
+                    /__----_ | | _----__\
+                   |/_-~~~-_\| |/_-~~~-_\|
+                   //    #  \===/    #  \\          -------------------------------------------------------------------------------
+                  //        |===|        \\         -------------------- This machine is maintained by Puppet! --------------------
+                 / |________|/~\|________| \        --------------      Unauthorized users will face Lord Vader    ----------------
+                /  \        |___|        /  \       -------------------------------------------------------------------------------
+               /   ^\      /| | |\      /^   \      Operating system: <%= @facts['os']['distro']['id'] %> - <%= @facts['os']['distro']['codename'] %> - <%= @facts['os']['distro']['release']['full'] %>
+              /     ^\   /| | | | |\   /^     \     Hostname: <%= @facts['networking']['fqdn'] %>
+             /       ^\/| | | | | | |\/^       \    Puppet environment: <%= @facts['agent_specified_environment'] %>
+            <          O|_|_|_|_|_|_|O          >   Puppet version: <%= @facts['puppetversion'] %>
+             ~\        \   -------   /        /~    Uptime: <%= @facts['system_uptime']['uptime'] %>
+               ~\       ~\ \_____/ /~       /~      Memory: <%= @facts['memory']['system']['total'] %>
+                 ~\       ^-_____-^       /~
+           _________>                   <__________
+/~~~~~~~~~~                                        ~~~~~~~~~~~\

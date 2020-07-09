@@ -1,0 +1,10 @@
+---
+profiles::baseprofile::packages:
+  webtrekk-truststore-public:
+    version: 1.0.0-1
+    pin: true
+
+# Custom hadoop parameteres for streaming cluster slave node
+hadoop::config::yarn_nodemanager_resource_memory_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_mb: '73728'
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: '320'

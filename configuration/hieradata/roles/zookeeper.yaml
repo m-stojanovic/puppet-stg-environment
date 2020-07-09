@@ -1,0 +1,12 @@
+---
+# Common zookeeper limits
+limits::entries:
+  'zookeeper/nofile':
+    both: 131072
+  'zookeeper/nproc':
+    both: 32000
+    
+profiles::nrpe::checks:
+  check_zookeeper:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a QuorumPeerMain

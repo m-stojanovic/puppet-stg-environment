@@ -1,0 +1,41 @@
+---
+profiles::nrpe::checks: 
+  check_ds_u_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-user-write
+  check_ds_u_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:2 -C java -a datastore-user-read
+  check_ds_u_read_batch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-user-read-batch
+  check_ds_rd_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-write
+  check_ds_rd_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-read
+  check_ds_rd_read_batch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-read-batch
+  check_ds_memb_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-membership-write
+  check_ds_ur_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-userresponse-write
+  check_ds_locking_srv:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a locking-service-query-server
+  check_ds_schema_repo:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a schema-repository
+  check_ds_se_app:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u selection-engine -c 1:1 -C java -a selection-engine-application
+  check_ds_stats_collector:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-stats-collector
+  check_ds_kpi_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-kpi-read

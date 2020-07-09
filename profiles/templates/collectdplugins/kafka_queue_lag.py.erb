@@ -1,0 +1,85 @@
+#!/usr/bin/python
+# Gather data regarding queue lag from kafka Burrow, perform necessary calculation (sum lag of all partitions per topic) and send via collectd to logstash.
+# Program uses terminology coming from burrow - please refere to https://github.com/linkedin/Burrow/wiki
+
+import collectd
+import json
+import requests
+
+# function returning cluster list from burrow
+def get_clusters( bhost = 'localhost', bport = '8000'):
+
+  clusters = []
+
+  try:
+    raw = requests.get('http://' + bhost + ':' + bport + '/v3/kafka')
+  except requests.exceptions.RequestException as e:
+    print e
+    sys.exit(1)
+
+  resp = json.loads(raw.text)
+
+  for clu in resp['clusters']:
+    clusters.append(clu)
+
+  return clusters
+
+
+# function returning consumer list from burrow
+def get_consumers ( cluster, bhost = 'localhost', bport = '8000' ):
+
+  consumers = []
+
+  try:
+    raw = requests.get('http://' + bhost + ':' + bport + '/v3/kafka/' + cluster + '/consumer')
+  except requests.exceptions.RequestException as e:
+    print e
+    sys.exit(1)
+
+  resp = json.loads(raw.text)
+
+  for cons in resp['consumers']:
+    consumers.append(cons)
+
+  return consumers
+
+
+
+
+def queue_lag( bhost = 'localhost', bport = '8000' ):
+  # dictionary holdimg lag data
+
+  # get cluster list and iterate through consumers
+  clusters = get_clusters()
+
+  for cluster in clusters:
+    consumers = get_consumers( cluster = cluster )
+    for consumer in consumers:
+      try:
+        raw = requests.get('http://' + bhost + ':' + bport + '/v3/kafka/' + cluster + '/consumer/' + consumer + '/lag')
+      except requests.exceptions.RequestException as e:
+        print e
+        sys.exit(1)
+
+      data = json.loads(raw.text)
+      lag = {}
+
+      for partition in data['status']['partitions']:
+        if lag.has_key(partition['topic']):
+          lag[partition['topic']] += partition['current_lag']
+        else:
+          lag[partition['topic']] = partition['current_lag']
+
+      for v in lag:
+        val = collectd.Values()
+        val.plugin = 'queue_lag'
+        val.plugin_instance = consumer
+        val.host = 'burrow-<%= @agent_specified_environment %>'
+        val.interval = 60
+        val.type = 'gauge'
+        val.type_instance = v
+        val.values = (lag[v],)
+        val.dispatch()
+
+
+collectd.register_read(queue_lag)

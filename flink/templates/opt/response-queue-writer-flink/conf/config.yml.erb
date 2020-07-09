@@ -1,0 +1,5 @@
+bootstrap.servers: <%= scope['dsglobals::kafka_brokers'] %>
+zookeeper.connect: <%= scope['dsglobals::hd_zookeeper_quorum'] %>
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>

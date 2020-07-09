@@ -1,0 +1,81 @@
+---
+zookeeper::config::peerport: "%{alias('zookeeper::ports.hadoop.peerport')}"
+zookeeper::config::clientport: "%{alias('zookeeper::ports.hadoop.clientport')}"
+zookeeper::config::leaderport: "%{alias('zookeeper::ports.hadoop.leaderport')}"  
+zookeeper::config::quorum: "%{alias('zookeeper::quorumsrv.hadoop')}"
+
+# Hadoop params required to maintain dfsjournal role
+hadoop::master_cluster_dfs: 'dsstg1cluster'
+hadoop::master_cluster_mr: 'dsstg1cluster_mr'
+hadoop::config::mapreduce_map_java_opts: '-Xmx2536m'
+hadoop::config::mapreduce_map_memory_mb: '4096'
+hadoop::config::mapreduce_reduce_java_opts: '-Xmx6144m'
+hadoop::config::mapreduce_reduce_memory_mb: '8192'
+hadoop::config::master_historyserver: 'os13dshdm02.muc.domeus.com'
+hadoop::config::master_jobtracker1: 'os13dshdm01.muc.domeus.com'
+hadoop::config::master_jobtracker1_alias: 'dsstg1nn1'
+hadoop::config::master_jobtracker2: 'os13dshdm02.muc.domeus.com'
+hadoop::config::master_jobtracker2_alias: 'dsstg1nn2'
+hadoop::config::master_resourcemanager: 'dshdm201.muc.domeus.com'
+hadoop::config::namenode_heap_mb: '8192'
+hadoop::config::yarn_app_mapreduce_am_resource_mb: '2048'
+hadoop::config::yarn_app_mapreduce_am_staging_dir: '/user/'
+hadoop::config::yarn_log_aggregation_enable: 'true'
+hadoop::config::yarn_nodemanager_remote_app_log_dir: '/var/log/hadoop-yarn/apps'
+hadoop::config::yarn_nodemanager_resource_cpu_vcores: '16'
+hadoop::config::yarn_resourcemanager_zk_state_store_parent_path: '/rmstore'
+hadoop::config::yarn_scheduler_capacity_maximum_applications: '400'
+hadoop::config::yarn_nodemanager_resource_cpu_vcores: 10
+hadoop::config::yarn_scheduler_maximum_allocation_mb: 28672
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: 320
+hadoop::config::yarn_nodemanager_resource_memory_mb: 32768
+
+# Common zookeeper limits
+limits::entries:
+  'zookeeper/nofile':
+    both: 131072
+  'zookeeper/nproc':
+    both: 32000
+
+collectd_plugins:
+  - collectd::plugin::zookeeper
+collectd::plugin::zookeeper::zookeeper_host: 'localhost'
+collectd::plugin::zookeeper::zookeeper_port: '2581'
+    
+profiles::nrpe::checks:
+  check_zookeeper:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a QuorumPeerMain
+  check_zookeeper_mode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.sh 2581
+  check_zk_nodecount:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_znode_count' -w '40000' -c '50000'
+  check_zk_liveconn:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_num_alive_connections' -w '1000' -c '5000'
+  check_zk_watch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_watch_count' -w '35000' -c '40000'
+  check_zk_requests:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_outstanding_requests' -w '20' -c '50'
+  check_zk_minlatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_min_latency' -w '50' -c '100'
+  check_zk_maxlatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_max_latency' -w '5000' -c '8000'
+  check_zk_avglatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_avg_latency' -w '50' -c '200'
+  check_zk_ephemerals:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_ephemerals_count' -w '1500' -c '2000'
+  check_zk_openfiles:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2581 -o nagios -k 'zk_open_file_descriptor_count' -w '2000' -c '5000'
+  check_hadoop_journalnode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a journal

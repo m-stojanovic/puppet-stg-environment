@@ -1,0 +1,5 @@
+<% @settings['config'].each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+com.teradata.speedlayer.offset.loader.zkPort=<%= scope['dsglobals::hd_zookeeper_clientport'] %>
+com.teradata.speedlayer.offset.loader.zkQuorum=<%= scope['dsglobals::hd_zookeeper_list'] %>

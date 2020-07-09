@@ -1,0 +1,39 @@
+lockingService {
+  logging {
+    log_to_file = false
+    log_to_console = true
+    log_path = "logs/"
+    default_log_level = <%= @log_level %>
+  }
+  queryService {
+    service {
+      notActiveSince = <%= @notactivesince %>
+      stalledAfterMinutes= <%= @stalledafterminutes %>
+      enabled = <%= @enabled %>
+      port = <%= @port %>
+      protocol = "<%= @protocol %>"
+      scheme = "<%= scope['datastore::zk_scheme'] %>"
+      quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+      announcepath = "<%= @announce_path %>"
+      shard = <%= @shard %>
+      announcetimeout = <%= @announce_timeout %>
+    }
+    hbaseTable = "<%= @hbase_table %>"
+    hbaseclient {
+      quorum = "<%= scope['datastore::hd_zookeeper_list'] %>"
+      zkclientport = <%= scope['datastore::hd_zookeeper_clientport'] %>
+      znodeparent = "<%= @hbase_znode %>"
+    }
+    storage = "<%= @storage %>"
+  }
+  blacklistService {
+    service {
+      tenantIdsPath = "<%= @blacklistservice['blacklist_file_path'] %>"
+      blacklistRequired = <%= @blacklistservice['required'] %>
+      refreshperiod {
+        unit = "<%= @blacklistservice['refresh']['unit'] %>"
+        value = <%= @blacklistservice['refresh']['value'] %>
+      }
+    }
+  }
+}

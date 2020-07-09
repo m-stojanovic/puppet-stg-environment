@@ -1,0 +1,56 @@
+---
+# Custom hadoop parameteres for streaming cluster master node
+hadoop::config::yarn_nodemanager_resource_memory_mb: '24576'
+hadoop::config::yarn_scheduler_maximum_allocation_mb: '24576'
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: '288'
+
+collectd::plugin::curl_json:
+  yarn_cluster_metrics:
+    url: "http://%{hostname}:50060/ws/v1/cluster/metrics"
+    instance: 'yarn-cluster-metrics'
+    keys:
+      'clusterMetrics/totalMB':
+        type: gauge
+        instance: ram_mb_total
+      'clusterMetrics/reservedMB':
+        type: gauge
+        instance: ram_mb_reserved
+      'clusterMetrics/availableMB':
+        type: gauge
+        instance: ram_mb_available
+      'clusterMetrics/allocatedMB':
+        type: gauge
+        instance: ram_mb_allocated
+      'clusterMetrics/appsSubmitted':
+        type: gauge
+        instance: apps_submitted
+      'clusterMetrics/appsCompleted':
+        type: gauge
+        instance: apps_completed
+      'clusterMetrics/appsPending':
+        type: gauge
+        instance: apps_pending
+      'clusterMetrics/appsRunning':
+        type: gauge
+        instance: apps_running
+      'clusterMetrics/availableVirtualCores':
+        type: gauge
+        instance: vcores_available
+      'clusterMetrics/reservedVirtualCores':
+        type: gauge
+        instance: vcores_reserved
+      'clusterMetrics/totalVirtualCores':
+        type: gauge
+        instance: vcores_total
+      'clusterMetrics/allocatedVirtualCores':
+        type: gauge
+        instance: vcores_allocated
+      'clusterMetrics/containersAllocated':
+        type: gauge
+        instance: containers_allocated
+      'clusterMetrics/containersReserved':
+        type: gauge
+        instance: containers_reserved
+      'clusterMetrics/containersPending':
+        type: gauge
+        instance: containers_pending

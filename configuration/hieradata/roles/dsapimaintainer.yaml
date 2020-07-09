@@ -1,0 +1,381 @@
+---
+java::packages: [ 'oracle-java8-installer', 'oracle-java8-set-default']
+java::version: '8u161-amd64-mapp'
+filebeat::package_ensure: 6.8.6
+filebeat::manage_repo: false
+filebeat::manage_apt: false
+filebeat::major_ensure: 6
+filebeat::inputs:
+  stats-reader:
+    paths:
+      - "/opt/ds-reader/logs/ds-reader.log"
+    fields_under_root: true
+    fields:
+      colocation: L3
+      type: ds-stat
+filebeat::outputs:
+  logstash:
+    hosts:
+      - "es101.muc.domeus.com:5045"
+      - "es102.muc.domeus.com:5045"
+      - "es103.muc.domeus.com:5045"
+      - "es104.muc.domeus.com:5045"
+      - "es105.muc.domeus.com:5045"
+      - "es106.muc.domeus.com:5045"
+      - "es107.muc.domeus.com:5045"
+      - "es108.muc.domeus.com:5045"
+      - "es109.muc.domeus.com:5045"
+      - "es110.muc.domeus.com:5045"
+    loadbalance: true
+filebeat::logging:
+  files:
+    path: /var/log
+    name: filebeat.log
+    rotateeverybytes: 10485760
+  level: info
+  to_files: true
+
+profiles::baseprofile::packages:
+  zookeeper:
+    version: 3.4.5+cdh5.14.0+136-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+
+profiles::nrpe::checks:
+  check_ds_u_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-user-write
+  check_ds_u_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-user-read/
+  check_ds_u_read_batch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-user-read-batch
+  check_ds_rd_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-write
+  check_ds_rd_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-read/
+  check_ds_rd_read_batch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-relateddata-read-batch
+  check_ds_memb_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-membership-write
+  check_ds_ur_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-userresponse-read
+  check_ds_ur_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-userresponse-write
+  check_ds_locking_srv:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a locking-service-query-server
+  check_ds_schema_repo:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a schema-repository
+  check_ds_se_app:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u selection-engine -c 1:1 -C java -a selection-engine-application
+  check_ds_se_hc:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_http -H localhost -p 60022 -u /selection/health -s true
+  check_ds_se_port:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_tcp -H localhost -p 60022
+  check_ds_stats_collector:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-stats-collector
+  check_ds_etl_server:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a etl-server
+  check_ee_kafka_rest:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a KafkaRestMain
+  check_ee_schema_registry:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a SchemaRegistryMain
+  check_etl_server:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_etl_server.py
+  check_long_running_jobs:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_long_running_jobs.sh
+  check_ds_stats_reader:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u ds-reader -c 1:1 -C java -a ds-reader
+  check_ds_kpi_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-kpi-read
+  check_ds_messagestats_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-messagestats-read
+  check_ds_metadata_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-metadata-write
+  check_ds_mobile_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-mobile-read
+  check_ds_mobile_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-mobile-write
+  check_ds_mobileresponse_read:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-mobileresponse-read
+  check_ds_mobileresponse_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-mobileresponse-write
+  check_ds_connect_write:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u root -c 1:1 -C java -a datastore-connect-write
+
+profiles::firewall::chainipv4:
+  INPUT: drop
+  FORWARD: drop
+  OUTPUT: accept
+profiles::firewall::chainipv6:
+  INPUT: drop
+  FORWARD: drop
+  OUTPUT: accept
+profiles::firewall::rules::ipv4:
+  '001 allow loopback':
+    chain: INPUT
+    iniface: lo
+    action: 'accept'
+  '002 allow eth0 internal interface':
+    chain: INPUT
+    iniface: eth0
+    action: 'accept'
+  '003 allow established / related':
+    chain: INPUT
+    proto: all
+    state: ['RELATED', 'ESTABLISHED']
+    action: accept
+  '004 allow datastore applications':
+    chain: INPUT
+    proto: tcp
+    dport: 8079-8101
+    action: 'accept'
+  '005 accept datastore application admin ports':
+    chain: INPUT
+    proto: tcp
+    dport: 9990-10009
+    action: 'accept'
+  '006 accept port 60022':
+    chain: INPUT
+    proto: tcp
+    dport: 60022
+    action: 'accept'
+  '007 accept port 60098:60099':
+    chain: INPUT
+    proto: tcp
+    dport: 60098-60099
+    action: 'accept'
+  '008 reject ident':
+    chain: INPUT
+    proto: tcp
+    dport: 113
+    action: 'reject'
+    reject: 'icmp-port-unreachable'
+  '009 accept icmp type 11':
+    chain: INPUT
+    proto: icmp
+    icmp: 11
+    action: 'accept'
+  '010 accept icmp type 3':
+    chain: INPUT
+    proto: icmp
+    icmp: 3
+    action: 'accept'
+  '011 accept icmp type 8':
+    chain: INPUT
+    proto: icmp
+    icmp: 8
+    limit: '15/sec'
+    action: 'accept'
+  '012 accept icmp type 0':
+    chain: INPUT
+    proto: icmp
+    icmp: 0
+    limit: '15/sec'
+    action: 'accept'
+  '013 accept icmp type 4':
+    chain: INPUT
+    proto: icmp
+    icmp: 8
+    action: 'accept'
+  '014 allow nagios':
+    chain: INPUT
+    proto: tcp
+    dport: 5666
+    action: accept
+  '015 allow ssh':
+    chain: INPUT
+    proto: tcp
+    dport: 22
+    action: accept
+  '014 allow ds-reader':
+    chain: INPUT
+    proto: tcp
+    dport: 8889
+    action: accept
+profiles::firewall::rules::ipv6:
+  '001 allow loopback ipv6':
+    chain: INPUT
+    iniface: lo
+    action: 'accept'
+  '002 allow eth0 internal interface ipv6':
+    chain: INPUT
+    iniface: eth0
+    action: 'accept'
+  '003 allow established / related ipv6':
+    chain: INPUT
+    proto: all
+    state: ['RELATED', 'ESTABLISHED']
+    action: accept
+  '004 allow datastore applications ipv6':
+    chain: INPUT
+    proto: tcp
+    dport: 8079-8101
+    action: 'accept'
+  '005 accept datastore application admin ports ipv6':
+    chain: INPUT
+    proto: tcp
+    dport: 9990-10009
+    action: 'accept'
+  '006 accept port 60022 ipv6':
+    chain: INPUT
+    proto: tcp
+    dport: 60022
+    action: 'accept'
+  '007 accept port 60098:60099 ipv6':
+    chain: INPUT
+    proto: tcp
+    dport: 60098-60099
+    action: 'accept'
+  '008 reject ident ipv6':
+    chain: INPUT
+    proto: tcp
+    dport: 113
+    action: 'reject'
+    reject: 'icmp6-port-unreachable'
+  '009 allow icmpv6 type 1':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 1
+    action: 'accept'
+  '010 allow icmpv6 type 2':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 2
+    action: 'accept'
+  '011 allow icmpv6 type 3':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 3
+    action: 'accept'
+  '012 allow icmpv6 type 4':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 4
+    action: 'accept'
+  '013 allow icmpv6 type 128':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 128
+    limit: '15/sec'
+    action: 'accept'
+  '014 allow icmpv6 type 129':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 129
+    limit: '15/sec'
+    action: 'accept'
+  '015 allow icmpv6 type 134':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 134
+    hop_limit: 255
+    action: 'accept'
+  '016 allow icmpv6 type 135':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 135
+    hop_limit: 255
+    action: 'accept'
+  '017 allow icmpv6 type 136':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 136
+    hop_limit: 255
+    action: 'accept'
+  '018 allow icmpv6 type 137':
+    chain: INPUT
+    proto: ipv6-icmp
+    icmp: 137
+    hop_limit: 255
+    action: 'accept'
+  '019 log dropped icmp':
+    chain: INPUT
+    jump: LOG
+    log_prefix: 'dropped ICMPv6'
+  '020 drop ipv6-icmp':
+    chain: INPUT
+    proto: ipv6-icmp
+    action: drop
+  '021 allow nagios tcp6':
+    chain: INPUT
+    proto: tcp
+    dport: 5666
+    action: accept
+  '022 allow ssh tcp 6':
+    chain: INPUT
+    proto: tcp
+    dport: 22
+    action: accept
+
+collectd_plugins:
+  - collectd::plugin::exec
+
+collectd::plugin::exec::commands:
+  'RDEJobCount':
+    user: 'nobody'
+    group: 'nogroup'
+    exec: [ '/opt/collectd/metrics/running_rdes_count.sh' ]
+collectd::plugin::processes::processmatch:
+  'ds-reader':
+    regex: '^java.*/opt/ds-reader/ds-reader.jar'
+    collect_file_descriptor: true
+  'etl-server':
+    regex: '^java.*/opt/etl-server/etl-server-.*-fat.jar'
+    collect_file_descriptor: true
+  'locking-service-query-server':
+    regex: '^java.*/opt/locking-service-query-server/lib/locking-service-query-server-.*.jar'
+    collect_file_descriptor: true
+  'membership-write':
+    regex: '^java.*/opt/datastore-membership-write/lib/datastore-membership-write-.*.jar'
+    collect_file_descriptor: true
+  'relateddata-read':
+    regex: '^java.*-classpath /opt/datastore-relateddata-read/lib'
+    collect_file_descriptor: true
+  'relateddata-write':
+    regex: '^java.*-classpath /opt/datastore-relateddata-write/lib'
+    collect_file_descriptor: true
+  'schema-repository':
+    regex: '^java.*/opt/schema-repository/lib/schema-repository-.*.jar'
+    collect_file_descriptor: true
+  'selection-engine':
+    regex: '^java.*/opt/selection-engine-application/lib/selection-engine-application-.*.jar'
+    collect_file_descriptor: true
+  'user-read':
+    regex: '^java.*/opt/datastore-user-read/lib/datastore-user-read-.*.jar'
+    collect_file_descriptor: true
+  'userresponse-read':
+    regex: '^java.*/opt/datastore-userresponse-read/lib/datastore-userresponse-read-.*.jar'
+    collect_file_descriptor: true
+  'userresponse-write':
+    regex: '^java.*/opt/datastore-userresponse-write/lib/datastore-userresponse-write-.*.jar'
+    collect_file_descriptor: true
+  'user-write':
+    regex: '^java.*/opt/datastore-user-write/lib/datastore-user-write-.*.jar'
+    collect_file_descriptor: true

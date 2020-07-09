@@ -1,0 +1,4 @@
+bootstrap.servers: <%= scope['dsglobals::kafka_brokers'] %>
+<% @settings.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>

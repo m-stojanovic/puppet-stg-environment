@@ -1,0 +1,11 @@
+nginx::package: 'nginx-full'
+nginx::package_ensure: '1.6.2-5+deb8u6'
+nginx::manage_repo: false
+nginx::sendfile: 'on'
+nginx::http_tcp_nodelay: 'on'
+nginx::http_tcp_nopush: 'on'
+nginx::types_hash_max_size: '2048'
+nginx::worker_processes: 1
+nginx::worker_rlimit_nofile: 1024
+nginx::nginx_error_log: '/var/log/nginx/error.log'
+nginx::nginx_error_log_severity: 'warn'

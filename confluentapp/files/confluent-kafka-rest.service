@@ -1,0 +1,17 @@
+[Unit]
+Description=Kafka REST service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/kafka-rest-start /etc/kafka-rest/kafka-rest.properties
+TimeoutStopSec=180
+Restart=no
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=confluent-kafka-rest
+
+[Install]
+WantedBy=multi-user.target

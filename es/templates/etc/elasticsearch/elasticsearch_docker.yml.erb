@@ -1,0 +1,171 @@
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please consult the documentation for further information on configuration options:
+# https://www.elastic.co/guide/en/elasticsearch/reference/index.html
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+cluster.name: <%= scope['es::cluster_name'] %>
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+#node.name: node-1
+#
+# Add custom attributes to the node:
+#
+#node.attr.rack: r1
+#
+# Storing the disk type will allow us to move shards based on disk
+node.attr.disk_type: <%= @disk_type %>
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+path.data: <%= @datapath %>
+#
+# Path to log files:
+#
+path.logs: <%= scope['es::logs_path'] %>
+#
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+# Mladen: To make it work!!!
+bootstrap.memory_lock: true
+#
+# Make sure that the heap size is set to about half the memory available
+# on the system and that the owner of the process is allowed to use this
+# limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+# MA
+network.host: <%= @instance_ip %>
+node.name: <%= @hostname %>-<%= @instance %>
+#
+# Set the bind address to a specific IP (IPv4 or IPv6):
+#
+#network.host: 192.168.0.1
+#
+# Set a custom port for HTTP:
+#
+#http.port: 9200
+#
+# For more information, consult the network module documentation.
+#---------------------------------- Node ---------------------------------------
+<% if @is_master == true and @is_node == true -%>
+node.master: true
+node.data: true
+node.ingest: false
+search.remote.connect: false
+cluster.initial_master_nodes:
+  - os13dses01-es1
+  - os13dses02-es1
+  - os13dses03-es1
+<% elsif @is_node == true %>
+node.master: false
+node.data: true
+node.ingest: false
+search.remote.connect: false
+cluster.initial_master_nodes:
+  - os13dses01-es1
+  - os13dses02-es1
+  - os13dses03-es1
+<% elsif @is_master == true %>
+node.master: true
+node.data: false
+node.ingest: false
+search.remote.connect: false
+cluster.initial_master_nodes:
+  - os13dses01-es1
+  - os13dses02-es1
+  - os13dses03-es1
+<% end -%>
+# --------------------------------- Discovery ----------------------------------
+#
+# Pass an initial list of hosts to perform discovery when new node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+discovery.zen.ping.unicast.hosts: <%= scope['es::unicast_hosts'] %>
+
+# Timeouts to help kubernetes nodes to work
+discovery.zen.ping_timeout: <%= @discovery_zen_ping_timeout %>
+
+#
+# Prevent the "split brain" by configuring the majority of nodes (total number of master-eligible nodes / 2 + 1):
+#
+#discovery.zen.minimum_master_nodes:
+#
+# For more information, consult the zen discovery module documentation.
+#
+# ---------------------------------- Gateway -----------------------------------
+#
+# Block initial recovery after a full cluster restart until N nodes are started:
+#
+#gateway.recover_after_nodes: 3
+#
+# For more information, consult the gateway module documentation.
+#
+# ---------------------------------- Various -----------------------------------
+# Rack awareness for shard distribution
+
+node.attr.machine_id: "<%= @hostname %>"
+cluster.routing.allocation.awareness.attributes: machine_id
+cluster.routing.allocation.balance.shard: <%= @allocation_balance_shard %>
+
+# Require explicit names when deleting indices:
+#
+#action.destructive_requires_name: true
+action.auto_create_index: <%= @auto_create_index %>
+
+indices.memory.index_buffer_size: 20%
+
+processors: 32
+thread_pool:
+  search:
+    size: 300
+    queue_size: 3000
+    min_queue_size: 2000
+    max_queue_size: 3000
+    auto_queue_frame_size: 2000
+    target_response_time: 2s
+  write:
+    size: 32
+    queue_size: 9000
+  get:
+    queue_size: 1000
+
+<% if not @common_es_conf.nil? -%>
+<% if not @common_es_conf['thread_pool'].nil? -%>
+<% if not @common_es_conf['thread_pool']['write'].nil? -%>
+    write:
+<% if not @common_es_conf['thread_pool']['write']['size'].nil? -%>
+        size: <%= @common_es_conf['thread_pool']['write']['size'] %>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+
+# Common settings
+<% @es_common_settings.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>
+
+xpack.security.enabled: false
+<% if @is_master == true %>
+# Because we're huge
+cluster.publish.timeout: 300s
+<% end -%>

@@ -1,0 +1,5 @@
+<% @properties.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+hfile.zk.quorum=<%= scope['datastore::hd_zookeeper_list'] %>
+hfile.zk.port=<%= scope['datastore::hd_zookeeper_clientport'] %>

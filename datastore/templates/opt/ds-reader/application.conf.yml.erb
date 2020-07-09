@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: <%= @appname %> 
+dsreader:
+  api:
+    version: v1
+  scan:
+    strategy: <%= @scan_strategy %>
+
+server:
+  port: <%= @service_port %>
+  tomcat:
+    compression: on
+    compressableMimeTypes: application/json,application/xml,text/css,text/html,text/xml,text/plain,application/javascript
+    remoteIpHeader: x-forwarded-for
+    internalProxies: .*
+    max-http-header-size: 102400
+    max-threads: <%= @max_threads %>
+  ssl.key-store: classpath:sample.jks
+  ssl.key-store-password: keypass
+  ssl.keyStoreType: PKCS12
+  ssl.keyAlias: tomcat
+
+hbase:
+    #Zookeeper quorum for HBASE
+    zk-quorum: <%= scope['datastore::hd_zookeeper_list'] %>
+    #Zookeeper port for HBASE
+    zk-port: <%= scope['datastore::hd_zookeeper_clientport'] %>
+    #Zookeeper/HBase retry/timeout settings
+    zk-session-timeout: 60000
+    zk-recovery-retry: 1
+    client-retries: 15
+    znodeParent: <%= @hbase_znode %>
+    #Destination table for HBASE
+    tablename: <%= @hbase_table %> 
+    scanCacheSize: 100
+    domainStatsTableName: <%= @hbase_domain_table %>
+    userresponseTableName: <%= @hbase_userresponse_table %>
+    conversionStatsTableName: <%= @hbase_conversion_table %>
+
+security:
+  user:
+    name: admin
+    password: "100000:819e994317de42f0cdd1f44a7ed0c64c9b94841598ce863399d85a2a703e95b9:9548a6730eb17c3eecfe360bf35dba8546b2e20b3579ca88917b65f65c81e6aa"
+
+internal:
+  securityToken: "<%= @internal_security_token %>"
+
+management:
+  port: <%= @admin_port %>
+  security: 
+    enabled: true
+
+endpoints:
+  sensitive: true
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+
+jwtAuth:
+  enabled: true
+  expiration: true
+  secretKey: <%= @jwt_secret_key %>
+  clockSkew: 5
+
+xssFilter:
+  enabled: <%= @xssfilter_enabled %>
+
+logging:
+  config: <%= @logging_config %>

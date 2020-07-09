@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<!--
+This is a sample configuration file for the Fair Scheduler. For details
+on the options, please refer to the fair scheduler documentation at
+http://hadoop.apache.org/core/docs/r0.21.0/fair_scheduler.html.
+
+To create your own configuration, copy this file to conf/fair-scheduler.xml
+and add the following property in mapred-site.xml to point Hadoop to the
+file, replacing [HADOOP_HOME] with the path to your installation directory:
+	<property>
+		<name>mapred.fairscheduler.allocation.file</name>
+		<value>[HADOOP_HOME]/conf/fair-scheduler.xml</value>
+	</property>
+
+Note that all the parameters in the configuration file below are optional,
+including the parameters inside <pool> and <user> elements. It is only
+necessary to set the ones you want to differ from the defaults.
+-->
+
+<% if scope['hadoop::config::enable_fairscheduler'] %>
+
+<allocations>
+
+	<pool name="customer">
+		<schedulingMode>fair</schedulingMode>
+	<% if scope['hadoop::config::fairshare_cust_minmaps'] %>
+		<minMaps><%= scope['hadoop::config::fairshare_cust_minmaps'] %></minMaps>
+	<% end %>
+	<% if scope['hadoop::config::fairshare_cust_minreduces'] %>
+		<minReduces><%= scope['hadoop::config::fairshare_cust_minreduces'] %></minReduces>
+	<% end %>
+	<% if scope['hadoop::config::fairshare_cust_minshare_preemption_timeout'] %>
+		<minSharePreemptionTimeout><%= scope['hadoop::config::fairshare_cust_minshare_preemption_timeout'] %></minSharePreemptionTimeout>
+	<% end %>
+		<weight>9.0</weight>
+	</pool>
+	
+	<pool name="pause">
+		<minMaps>0</minMaps>
+		<minReduces>0</minReduces>
+		<maxMaps>0</maxMaps>
+		<maxReduces>0</maxReduces>
+		<weight>0.1</weight>
+  </pool>
+
+  <pool name="maintenance">
+    <schedulingMode>fair</schedulingMode>
+    <minMaps>80</minMaps>
+    <maxMaps>100</maxMaps>
+    <minReduces>10</minReduces>
+    <maxReduces>30</maxReduces>
+    <minSharePreemptionTimeout>300</minSharePreemptionTimeout>
+    <weight>9.0</weight>
+  </pool>
+
+<% if scope['hadoop::config::fairshare_def_minshare_preemption_timeout'] %>
+	<defaultMinSharePreemptionTimeout><%= scope['hadoop::config::fairshare_def_minshare_preemption_timeout'] %></defaultMinSharePreemptionTimeout>
+<% end %>
+<% if scope['hadoop::config::fairshare_preemption_timeout'] %>
+	<fairSharePreemptionTimeout><%= scope['hadoop::config::fairshare_preemption_timeout'] %></fairSharePreemptionTimeout>
+<% end %>
+	<userMaxJobsDefault>12</userMaxJobsDefault>
+	<defaultPoolSchedulingMode>fifo</defaultPoolSchedulingMode>
+
+</allocations>
+<% end %> <%# enable_fairscheduler %>

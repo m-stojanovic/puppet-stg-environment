@@ -1,0 +1,18 @@
+---
+zookeeper::config::jute_maxbuffer: 'UNSET'
+zookeeper::config::ticktime: 2000
+zookeeper::config::initlimit: 10
+zookeeper::config::synclimit: 5
+zookeeper::config::purgeinterval: 1
+zookeeper::config::maxclientcnxns: 10000
+zookeeper::config::snapretaincount: '5'
+zookeeper::config::jvmflags: '-Xms2g -Xmx2g -XX:MaxPermSize=256M -Dzookeeper.log.threshold=INFO -Dcom.sun.management.jmxremote.port=19990 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false'
+zookeeper::config::datadir: '/var/lib/zookeeper'
+zookeeper::config::alternative: 'zookeeper-conf'
+zookeeper::config::configuration_directory: '/etc/zookeeper/conf-puppet'
+zookeeper::java::packages: [ 'oracle-java8-installer', 'oracle-java8-set-default']
+zookeeper::java::version: '8u161-amd64-mapp'
+zookeeper::install::basepackage: 'zookeeper'
+zookeeper::install::serverpackage: 'zookeeper-server'
+zookeeper::install::baseversion: '3.4.5+cdh5.14.0+136-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+zookeeper::install::serverversion: '3.4.5+cdh5.14.0+136-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'

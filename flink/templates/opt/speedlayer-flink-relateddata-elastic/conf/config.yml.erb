@@ -1,0 +1,20 @@
+#################### config file for relateddata-elastic flow ######################
+#
+# pass location of this file with --config filename.yml to program
+#  (all params can also be passed individually to on commandline using -- as prefix
+#
+##############################################################################
+
+bootstrap.servers: <%= @kafka_brokers %>
+zookeeper.connect: <%= @zookeeper_connect %>
+ds.schema.registry.url: zk!<%= @zookeeper_connect %>!<%= @defaults['ds_schema_registry_path'] %>
+
+hbase.rootdir: <%= @defaults['hbase_rootdir'] %>
+hbase.zookeeper.quorum: <%= @zookeeper_connect_hbase %>
+hbase.zookeeper.property.clientPort: <%= @zookeeper_port %>
+
+elasticsearch.http.hosts: <%= @elasticsearch_http_hosts %>
+
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>

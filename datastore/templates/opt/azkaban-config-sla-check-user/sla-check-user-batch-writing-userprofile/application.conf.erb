@@ -1,0 +1,91 @@
+smoketest {
+
+  type = userAttribute
+  mode = batch-store // speed, batch-store, batch-test
+
+  howMany = 100
+  requestTimeout = <%= @request_timeout_userprofile %>
+  workerThreads = 30
+  maxReadRetries = <%= @max_read_retries_userprofile %>
+  retryReadInterval = <%= @retry_read_interval_userprofile %>
+
+  logLevel = <%= @log_level %>
+
+  statsFile = "logs/smoketestclientstats-batch-writing-userprofile.dat"
+
+  resultLimit {
+    successPercentage = <%= @minimum_success_percentage %>
+    averageRequestDuration = "<%= @maximum_average_duration %>.milliseconds"
+  }
+
+  userAttribute {
+    readSource = userProfile // findUser
+    userAttributeFile = "logs/userattibutes1000.json"
+
+    batch {
+      fileDir = "userAttribute/batch"
+      filePeriod = 4.hours
+    }
+
+    findUser {
+      destination = "<%= @selection_count_path %>"
+    }
+
+    data {
+      tenantId = 99903
+      minUserId = 1
+      maxUserId = 24000
+      minGroupId = 1
+      maxGroupId = 100
+      maxAttributeNames = 4000
+      maxAttributeNameLength = 50
+      maxStringAttributeValueLength = 100
+      newAttributeNamesPerRun = 10
+//      unicodeStrings = true
+      deleteUsersOnExit = false
+    }
+  }
+}
+
+userserviceClient {
+  connect {
+	scheme = "<%= @scheme %>"
+    quorum  = "<%= @zk_quorum %>"
+    path = "<%= @user_service_announce_path %>"
+  }
+  client {
+    maxRetries = 3
+    thriftMux = true
+    workerThreads = 30
+    checkServiceAvailability = true
+  }
+  processing {
+    timeout = 5.seconds
+  }
+}
+
+userprofileClient {
+  connect {
+    scheme = "<%= @scheme %>"
+    quorum  = "<%= @zk_quorum %>"
+    path = "<%= @user_profile_batch_announce_path %>"
+  }
+  client {
+    maxRetries = 3
+    thriftMux = true
+    workerThreads = 30
+    checkServiceAvailability = true
+  }
+  processing {
+    timeout = 5.seconds
+  }
+}
+
+statistics {
+  statsWindows = [1.minute, 10.minutes, 1.hour]
+  dumpInterval = "<%= @stats_dump_interval %>"
+  httpConnector {
+    url = "<%= @stats_collector_path %>"
+    timeout = "3.seconds"
+  }
+}

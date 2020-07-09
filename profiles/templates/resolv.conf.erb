@@ -1,0 +1,7 @@
+<% @dns.each do |k,v| -%>
+<% v['nameservers'].each do |s| -%>
+nameserver <%= s %>
+<% end -%>
+<% end -%>
+search <%= @dns['domain'].join(' ') %>
+optioms <%= @dns['options'].join(' ') %>

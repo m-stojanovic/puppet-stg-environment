@@ -1,0 +1,75 @@
+---
+zookeeper::ports:
+  hadoop:
+    peerport: '2991'
+    clientport: '1981'
+    leaderport: '3991'
+  api:
+    peerport: '2992'
+    clientport: '2081'
+    leaderport: '3992'
+zookeeper::quorumsrv:
+  hadoop:
+    os13dshdz01.muc.domeus.com: 0
+    os13dshdz02.muc.domeus.com: 1
+    os13dshdz03.muc.domeus.com: 2
+  api:
+    os13dsapz01.muc.domeus.com: 0
+    os13dsapz02.muc.domeus.com: 1
+    os13dsapz03.muc.domeus.com: 2
+zookeeper::scheme: zk
+hadoop::journalnodeport: '8485'
+kafka::brokers:
+  os13dsqueue01.muc.domeus.com:
+    id: 1
+  os13dsqueue02.muc.domeus.com:
+    id: 2
+  os13dsqueue03.muc.domeus.com:
+    id: 3
+kafka::broker_port: 9092
+es::clustername: 'STG-DS-ES'
+es::masternode: 'os13dses01.muc.domeus.com'
+es::masternode_port: 9200
+es::http_port: 9200
+es::transport_port: 9300
+es::nodes:
+  - os13dses01.muc.domeus.com
+  - os13dses02.muc.domeus.com
+  - os13dses03.muc.domeus.com
+  - os13dses04.muc.domeus.com
+  - os13dses05.muc.domeus.com
+  - os13dses06.muc.domeus.com
+ha::keepalive: 2
+ha::deadtime: 30
+ha::warntime: 10
+ha::initdead: 35
+ha::udpport: 694
+ha::nodes:
+  - os13dsapi02
+  - os13dsapi03
+ha::autofailback: 'off'
+ha::preferednode: os13dsapi02
+ha::kafkanlbaddress: '192.168.139.107'
+
+confluentapp::kafkarest::package: 'confluent-kafka-rest' 
+confluentapp::kafkarest::version: '2.0.1-1'
+confluentapp::kafkarest::schemaregistryurl: 'http://schema-lb-stg.muc.domeus.com'
+confluentapp::kafkarest::compression_type: 'snappy'
+confluentapp::kafkarest::port: 8182
+confluentapp::kafkarest::consumer_request_max_bytes: 5242880
+confluentapp::kafkarest::debug: 'false'
+confluentapp::kafkarest::javaheapopts: '-Xms1G -Xmx1G'
+confluentapp::kafkarest::jvmperfoptions: '-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35'
+confluentapp::schemaregistry::packages:
+  confluent-common:
+    ensure: '5.3.1-1'
+  confluent-rest-utils:
+    ensure: '5.3.1-1'
+  confluent-schema-registry:
+    ensure: '5.3.1-1'
+confluentapp::schemaregistry::port: '8181'
+confluentapp::schemaregistry::kafkastoretopic: '_schemas'
+confluentapp::schemaregistry::groupid: 'connect-cluster'
+confluentapp::schemaregistry::url: 'http://localhost:8181'
+confluentapp::schemaregistry::bootstrapservers: 'localhost:9092'
+confluentapp::schemaregistry::hname:

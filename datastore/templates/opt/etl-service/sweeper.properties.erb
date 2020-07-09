@@ -1,0 +1,6 @@
+<% @settings.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+sweeper.schema.registryUrl="zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!/services/registry"
+sweeper.sweep.zk.quorum=<%= scope['dsglobals::hd_zookeeper_list'] %>
+sweeper.sweep.zk.port=<%= scope['dsglobals::hd_zookeeper_clientport'] %>

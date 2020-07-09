@@ -1,0 +1,16 @@
+---
+apt::sources:
+  "debian_stretch_mapp":
+    location: http://image-priv.muc.domeus.com/apt/dsdebrepo/
+    architecture: amd64,all
+    release: mapp
+    repos: main
+    key:
+      id: 992E4D14E3BC7F71A59AF48AA40EAA8781EDE7B0
+      source: http://image-priv.muc.domeus.com/apt/repo-keys/dsdebrepo.gpg.key
+  "debian_stretch_update":
+    location: http://image-priv.muc.domeus.com/apt/debian
+    release: "stretch-updates"
+    repos: main contrib non-free
+collectd::package_ensure: '5.7.1-1.1'
+collectd::minimum_version: '5.7'

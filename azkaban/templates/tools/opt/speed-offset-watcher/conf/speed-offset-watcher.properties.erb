@@ -1,0 +1,6 @@
+<% @settings['config'].each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+speed.offset.watcher.zk.port=<%= scope['dsglobals::hd_zookeeper_clientport'] %>
+speed.offset.watcher.zk.hosts=<%= scope['dsglobals::hd_zookeeper_list'] %>
+speed.offset.watcher.es.http.nodes=<%= scope['dsglobals::es_http_nodes'] %>

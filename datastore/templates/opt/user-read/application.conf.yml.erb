@@ -1,0 +1,45 @@
+userReadApp {
+  logging {
+        log_to_file = false
+        log_to_console = true
+        log_path = "logs/"
+        default_log_level = "<%= @log_level %>"
+          }
+  userprofile {
+        service {
+                enabled = "<%= @enabled %>"
+                port = <%= @service_port %>
+                protocol = "<%= @protocol %>"
+                scheme = "<%= scope['datastore::zk_scheme'] %>"
+	        <% if scope['datastore::api_zookeeper_quorum'] == scope['datastore::hd_zookeeper_quorum'] -%>
+                quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+                <% else %>
+                quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>","<%= scope['datastore::hd_zookeeper_quorum'] %>"]
+                <% end -%>
+                announcepath = "<%= @announce_path %>"
+                shard = <%= @shard %>
+                announcetimeout = <%= @announce_timeout %>
+                }
+        userProfileDao = "hbase"
+        userProfileDaoCaching = false
+        returnStrings = true
+        withFastTable = true
+        fasttable = "<%= @hbase_speed_table %>"
+        batchtable = "<%= @hbase_batch_table %>"
+        hbaseclient {
+            quorum = "<%= scope['datastore::hd_zookeeper_list'] %>"
+            zkclientport = "<%= scope['datastore::hd_zookeeper_clientport'] %>"
+            znodeparent = "<%= @hbase_znode %>"
+	   }
+       redis {
+            host = "<%= @redis_host %>"
+            port = <%= @redis_port %>
+            password = "<%= @redis_password %>"
+       }
+	   elasticsearch {
+             http {
+               hosts = "<%= scope['datastore::es_http_nodes'] %>"
+             }
+       }
+    }
+}

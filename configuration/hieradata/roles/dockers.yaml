@@ -1,0 +1,36 @@
+# Burrow
+dockers::containers::burrow::conf_dir: '/opt/docker/ds-kafka-burrow/'
+dockers::containers::burrow::image: 'docker-public.muc.domeus.com/devops/ds-burrow:202001141453'
+dockers::containers::burrow::conf_file: 'burrow.toml'
+dockers::containers::burrow::kafka_version: '2.3.0'
+dockers::containers::burrow::port: '8000'
+dockers::containers::burrow::clustername: 'stg-kafka'
+dockers::containers::burrow::cluster_classname: 'kafka'
+dockers::containers::burrow::consumer_classname: 'kafka_zk'
+dockers::containers::burrow::consumers:
+
+  Kafka-offsets:
+    class_name: "%{alias('dockers::containers::burrow::cluster_classname')}"
+    cluster: "%{alias('dockers::containers::burrow::clustername')}"
+    client_profile: "burrow"
+    offsets_topic: "__consumer_offsets"
+    start_latest: 'true'
+    group_whitelist: '.*'
+  ZKEvent-Engine:
+    class_name: "%{alias('dockers::containers::burrow::consumer_classname')}"
+    cluster: "%{alias('dockers::containers::burrow::clustername')}"
+    zookeeper_timeout: 30
+    zookeeper_path: '/kafka'
+    group_whitelist: 'cep-group.*'
+
+# Kafka-Manager
+dockers::containers::kafkamanager::conf_dir: '/opt/docker/kafka-manager/'
+dockers::containers::kafkamanager::conf_file: 'application.conf'
+dockers::containers::kafkamanager::port: 9000
+dockers::containers::kafkamanager::image: 'docker-public.muc.domeus.com/devops/kafka-manager:2.0.0.2'
+
+# Cerebro
+dockers::containers::cerebro::conf_dir: '/opt/docker/cerebro/'
+dockers::containers::cerebro::conf_file: 'application.conf'
+dockers::containers::cerebro::image: 'docker-public.muc.domeus.com/devops/cerebro'
+dockers::containers::cerebro::port: 8080

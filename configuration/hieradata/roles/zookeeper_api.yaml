@@ -1,0 +1,55 @@
+---
+zookeeper::config::peerport: "%{alias('zookeeper::ports.api.peerport')}"
+zookeeper::config::clientport: "%{alias('zookeeper::ports.api.clientport')}"
+zookeeper::config::leaderport: "%{alias('zookeeper::ports.api.leaderport')}"  
+zookeeper::config::quorum: "%{alias('zookeeper::quorumsrv.api')}"
+
+# Common zookeeper limits
+limits::entries:
+  'zookeeper/nofile':
+    both: 131072
+  'zookeeper/nproc':
+    both: 32000
+    
+collectd_plugins:
+  - collectd::plugin::zookeeper
+collectd::plugin::zookeeper::zookeeper_host: 'localhost'
+collectd::plugin::zookeeper::zookeeper_port: '2081'
+    
+profiles::nrpe::checks:
+  check_zookeeper:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a QuorumPeerMain
+  check_zookeeper_mode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.sh 2081
+  check_zk_nodecount:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_znode_count' -w '40000' -c '50000'
+  check_zk_liveconn:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_num_alive_connections' -w '1000' -c '5000'
+  check_zk_watch:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_watch_count' -w '35000' -c '40000'
+  check_zk_requests:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_outstanding_requests' -w '20' -c '50'
+  check_zk_minlatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_min_latency' -w '50' -c '100'
+  check_zk_maxlatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_max_latency' -w '5000' -c '8000'
+  check_zk_avglatency:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_avg_latency' -w '50' -c '200'
+  check_zk_ephemerals:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_ephemerals_count' -w '1500' -c '2000'
+  check_zk_openfiles:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_zookeeper.py -s localhost:2081 -o nagios -k 'zk_open_file_descriptor_count' -w '2000' -c '5000'
+  check_hadoop_journalnode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a journal

@@ -1,0 +1,71 @@
+---
+hbase::hbase_version: '1.2.0+cdh5.14.0+440-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+hbase::maintenance:
+  daily: true
+  daily_hour: 15
+  daily_minute: 00
+  daily_script: 'maintenance_daily.sh'
+  oom_action_override: true
+  oom_action_script: 'hbase_oom_handler.sh'
+  location:
+    - '/etc/hbase/scripts'
+  scripts:
+    - 'maintenance_daily.sh'
+    - 'major_compaction.hql'
+    - 'hbase_oom_handler.sh'
+hbase::config::alternatives:
+  entries:
+    "%{hiera('hbase::config::configuration_directory')}":
+      ensure: 'present'
+      altlink: '/etc/hbase/conf'
+      altname: 'hbase-conf'
+      priority: 50
+  set:
+    'hbase-conf':
+      path: "%{hiera('hbase::config::configuration_directory')}"
+hbase::config::classpath:
+  - '/usr/lib/hbase/ecmdas-impl-7.16-SNAPSHOT-selections.jar'
+  - '/usr/lib/hbase/das-hbase-7.25-SNAPSHOT-fast-regex.jar'
+hbase::config::common_fad:
+  "%{hiera('hbase::config::configuration_directory')}":
+    ensure: 'directory'
+    recurse: true
+    purge: true
+  '/var/log/hbase':
+    ensure: 'directory'
+    owner: 'root'
+    group: 'hbase'
+    mode: '0775'
+hbase::config::common_links:
+  "%{hiera('hbase::config::configuration_directory')}/hdfs-site.xml":
+    ensure: 'link'
+    target: '/etc/hadoop/conf/hdfs-site.xml'
+hbase::config::compactions_offpeak_enable: true
+hbase::config::compactions_offpeak_end_hour: 23
+hbase::config::compactions_offpeak_start_hour: 15
+hbase::config::configuration_directory: '/etc/hbase/conf-puppet'
+hbase::config::configuration_files:
+  - '/etc/hbase/conf-puppet/hbase-env.sh'
+  - '/etc/hbase/conf-puppet/hbase-site.xml'
+  - '/etc/hbase/conf-puppet/log4j.properties'
+  - '/etc/hbase/conf-puppet/regionservers'
+hbase::config::coprocessor_classes: []
+hbase::config::extralibs:
+  - 'ecmdas-impl-7.16-SNAPSHOT-selections.jar'
+  - 'das-hbase-7.25-SNAPSHOT-fast-regex.jar'
+hbase::config::gclogs: false
+hbase::config::heapsize_in_mb: 4096
+hbase::config::master_heapsize_in_mb: '6144m'
+hbase::config::java_home: '/usr/lib/jvm/java-8-oracle'
+hbase::config::libdir: '/usr/lib/hbase'
+hbase::config::max_direct_memory_size_mb: 3072
+hbase::config::max_direct_memory_size_switch_bool: false
+hbase::config::min_regionservers_to_start: 3
+hbase::config::master_cluster_dfs: 'dsstg1cluster'
+hbase::install::packages:
+  hbase: '1.2.0+cdh5.14.0+440-1.cdh5.14.0.p0.47~jessie-cdh5.14.0'
+  cloudera-hbase-lzo: '20110525160022.2bd0d5b-1-6'
+hbase::roles::master::packages: 
+  'hbase-master': "%{hiera('hbase::hbase_version')}"
+hbase::roles::regionserver::packages: 
+  'hbase-regionserver': "%{hiera('hbase::hbase_version')}"

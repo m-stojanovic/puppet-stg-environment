@@ -1,0 +1,49 @@
+---
+# config file owners
+flink::user: root
+flink::group: root
+
+# flink env vars
+flink::configuration_directory: '/etc/flink/conf-puppet'
+flink::configuration_files:
+  - "%{hiera('flink::configuration_directory')}/flink-conf.yaml"
+  - "%{hiera('flink::configuration_directory')}/masters"
+  - "%{hiera('flink::configuration_directory')}/slaves"
+  - "%{hiera('flink::configuration_directory')}/logback.xml"
+  - "%{hiera('flink::configuration_directory')}/log4j.properties"
+  - "%{hiera('flink::configuration_directory')}/log4j-cli.properties"
+  - "%{hiera('flink::configuration_directory')}/log4j-yarn-session.properties"
+flink::alternative_name: 'flink-conf'
+flink::alternative_link: '/etc/flink/conf'
+flink::env_java_home: /usr/lib/jvm/java-8-oracle
+flink::env_java_opts: '-XX:ReservedCodeCacheSize=100M -XX:MaxMetaspaceSize=256m -XX:CompressedClassSpaceSize=256m'
+flink::taskmanager_preallocate_heap: true
+flink::parallelism_default: 2
+flink::jobmanager_web_port: 8081
+flink::jobmanager_web_submit_enabled: false
+flink::state_backend: filesystem
+flink::savepoints_state_backend: filesystem
+flink::taskmanager_network_numberOfBuffers: 4000
+flink::taskmanager_tmp_dir: '/tmp/flink'
+flink::taskmanager_tmp_in_subdir: true
+flink::fs_hdfs_hadoopconf: /etc/hadoop/conf/
+flink::flink_masters:
+  - localhost
+flink::flink_slaves:
+  - localhost
+flink::yarn_application_attempts: 10
+
+# flink manager configuration
+flink::manager::configuration_directory: '/etc/flink-manager'
+flink::manager::packages:
+  flink-manager:
+    ensure: '1.6.1'
+flink::manager::apps_defaults:
+  hadoop_conf_dir: /etc/hadoop/conf
+  yarn_session_container_suffix: job
+  yarn_properties_prefix: /tmp/.yarn-properties-
+  yarn_session_jm_memory: 1024
+  yarn_session_tm_no: 1
+  yarn_session_tm_memory: 1024
+  yarn_session_tm_slots: 1
+  yarn_session_queue: default

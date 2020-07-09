@@ -1,0 +1,41 @@
+# Custom hadoop values for hd cluster
+---
+# Custom flink config
+flink::state_backend_checkpointdir: hdfs://dsstg1cluster/user/flink/flink-checkpoints
+flink::savepoints_state_backend_fs_dir: hdfs://dsstg1cluster/user/flink/flink-savepoints
+
+# flink
+flink::jobmanager_web_submit_enabled: true
+flink::taskmanager_tmp_in_subdir: true
+
+# flink packages
+flink::packages:
+  flink:
+    ensure: '1.9.2-2'
+  flink-common-libs:
+    ensure: '0.1.1'
+
+# flink applications
+flink::applications::type: 'exports'
+flink::applications::defaults: {}
+flink::applications::list: {}
+
+# flink manager configuration
+flink::manager::apps:
+  snapshots:
+    defaults:
+      yarn_session_container_suffix: jobs
+      yarn_session_jm_memory: 6144
+      yarn_session_tm_memory: 4096
+      yarn_session_tm_slots: 1
+      yarn_session_queue: etl_jobs
+      flink_additional_parameters: 'env.java.opts.jobmanager=-XX:MaxDirectMemorySize=4620m;env.java.opts.taskmanager=-XX:MaxDirectMemorySize=2304m;akka.ask.timeout=300s;akka.client.timeout=300s;web.history=32;web.timeout=300000;taskmanager.network.memory.fraction=0.3;taskmanager.network.memory.max=3221225472'
+      put_properties_file: 'true'
+    etl_extended:
+      yarn_session_tm_memory: 6144
+      flink_additional_parameters: 'env.java.opts.jobmanager=-XX:MaxDirectMemorySize=4360m;env.java.opts.taskmanager=-XX:MaxDirectMemorySize=4608m;akka.ask.timeout=300s;akka.client.timeout=300s;web.history=32;web.timeout=300000;taskmanager.network.memory.fraction=0.2;taskmanager.network.memory.max=3221225472;containerized.heap-cutoff-ratio=0.35'
+      put_properties_file: 'true'
+  flink_t0-member-attr:
+    defaults:
+      yarn_session_tm_memory: 6144
+      flink_additional_parameters: 'env.java.opts.taskmanager=-XX:MaxDirectMemorySize=1280m;web.history=1000'

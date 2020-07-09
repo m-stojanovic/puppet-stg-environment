@@ -1,0 +1,56 @@
+---
+# Common Hadoop limits
+limits::entries:
+  'hbase/nofile':
+    both: unlimited
+  'hbase/nproc':
+    both: 32000
+  'hbase/memlock':
+    both: unlimited
+  'hdfs/nofile':
+    both: 262144
+  'hdfs/nproc':
+    both: 65536
+  'mapred/nofile':
+    both: 262144
+  'mapred/nproc':
+    both: 65536
+  'yarn/nofile':
+    both: 524288
+  'yarn/nproc':
+    both: 65536
+
+sysctl::entries:
+  net.core.rmem_max:
+    value: 16777216
+  net.core.wmem_max:
+    value: 16777216
+  net.ipv4.tcp_max_syn_backlog: 
+    value: 4096
+  net.ipv4.tcp_fin_timeout:
+    value: 15
+
+profiles::nrpe::checks:
+  check_hadoop_namenode:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u hdfs -c 1:1 -C java -a namenode
+  check_hbase_master:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u hbase -c 1:1 -C java -a master
+  check_hadoop_historyserver:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a historyserver
+  check_yarn_resourcemanager:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a yarn-resourcemanager
+  check_hdfs_zkfc:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a DFSZKFailoverController
+  check_flink_exports_181:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh snapshots 181
+    sudo: true
+  check_flink_exports_182:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_flink_containers.sh snapshots 182
+    sudo: true

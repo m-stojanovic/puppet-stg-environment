@@ -1,0 +1,12 @@
+bootstrap.servers=<%= @bootstrapservers %>
+group.id=connect-cluster
+key.converter=io.confluent.connect.avro.AvroConverter
+key.converter.schema.registry.url=<%= @url %>
+value.converter=io.confluent.connect.avro.AvroConverter
+value.converter.schema.registry.url=<%= @url %>
+internal.key.converter=org.apache.kafka.connect.json.JsonConverter
+internal.value.converter=org.apache.kafka.connect.json.JsonConverter
+internal.key.converter.schemas.enable=false
+internal.value.converter.schemas.enable=false
+config.storage.topic=connect-configs
+offset.storage.topic=connect-offsets

@@ -1,0 +1,834 @@
+---
+##############################################################################################################
+#                                           SMOKE TESTS                                                      #
+##############################################################################################################
+# USER
+datastore::applications::smoketestuser::package: 'smoketestclient-user'
+datastore::applications::smoketestuser::version: '0.20.18'
+
+# MEMBER
+datastore::applications::smoketestmember::package: 'smoketestclient-membership'
+datastore::applications::smoketestmember::version: '0.20.18'
+
+# RELATED DATA
+datastore::applications::smoketestrelateddata::package: 'smoketestclient-relateddata'
+datastore::applications::smoketestrelateddata::version: '0.20.18'
+
+# USER RESPONSE
+datastore::applications::smoketestuserresponse::package: 'smoketestclient-userresponse'
+datastore::applications::smoketestuserresponse::version: '0.20.18'
+
+# STATISTICS
+datastore::applications::smoketeststatistics::package: 'smoketestclient-statistics'
+datastore::applications::smoketeststatistics::version: '0.20.19'
+
+# EXPORT
+datastore::applications::smoketestexport::package: 'smoketestclient-export'
+datastore::applications::smoketestexport::version: '0.20.18'
+
+##############################################################################################################
+#                       USER READ                                                                            #
+##############################################################################################################
+
+datastore::applications::userread::package: datastore-user-read
+datastore::applications::userread::version: 1.0.41
+datastore::applications::userread::environment: production
+datastore::applications::userread::enabled: true
+datastore::applications::userread::announce_path: '/services/userprofile'
+datastore::applications::userread::announce_timeout: 30000
+datastore::applications::userread::shard: 0
+datastore::applications::userread::admin_port: 9991
+datastore::applications::userread::service_port: 8082
+datastore::applications::userread::processor: avro_kafka
+datastore::applications::userread::protocol: thriftmux
+datastore::applications::userread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::userread::hbase_speed_table: user-profile-speed-0
+datastore::applications::userread::hbase_batch_table: user-profile-batch-0
+datastore::applications::userread::log_level: INFO
+datastore::applications::userread::log_stdout: 'logs/datastore-user-read.log'
+datastore::applications::userread::log_stderr: 'logs/datastore-user-read.err'
+datastore::applications::userread::redis_host: 'cepdsredis-stg.muc.domeus.com'
+datastore::applications::userread::redis_port: 6381
+datastore::applications::userread::redis_password: "%{alias('secrets::datastore::applications::userread::redis_password')}"
+
+##############################################################################################################
+#                       USER WRITE                                                                           #
+##############################################################################################################
+
+datastore::applications::userwrite::package: datastore-user-write
+datastore::applications::userwrite::version: 1.0.41
+datastore::applications::userwrite::announce_path: '/services/userevent'
+datastore::applications::userwrite::announce_timeout: 30000
+datastore::applications::userwrite::shard: 0
+datastore::applications::userwrite::enabled: true
+datastore::applications::userwrite::admin_port: 9990
+datastore::applications::userwrite::service_port: 8081
+datastore::applications::userwrite::processor: avro_kafka
+datastore::applications::userwrite::protocol: thriftmux
+datastore::applications::userwrite::encoder: camus
+datastore::applications::userwrite::log_level: INFO
+datastore::applications::userwrite::log_stdout: 'logs/datastore-user-write.log'
+datastore::applications::userwrite::log_stderr: 'logs/datastore-user-write.err'
+datastore::applications::userwrite::kafka_topic: user
+datastore::applications::userwrite::dsattributes_topic: dsattributes
+datastore::applications::userwrite::group_topic: group
+
+##############################################################################################################
+#                       USER READ BATCH                                                                      #
+##############################################################################################################
+
+datastore::applications::userreadbatch::enabled: true
+datastore::applications::userreadbatch::admin_port: 9992
+datastore::applications::userreadbatch::service_port: 8083
+datastore::applications::userreadbatch::scheme: zk
+datastore::applications::userreadbatch::announce_path: '/services/userprofilebatch'
+datastore::applications::userreadbatch::announce_timeout: 30000
+datastore::applications::userreadbatch::protocol: thriftmux
+datastore::applications::userreadbatch::shard: 0
+datastore::applications::userreadbatch::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::userreadbatch::hbase_speed_table: 'user-profile-speed-0'
+datastore::applications::userreadbatch::hbase_batch_table: 'user-profile-batch-0'
+datastore::applications::userreadbatch::log_level: INFO
+datastore::applications::userreadbatch::log_stderr: 'logs/datastore-user-read-batch.err'
+datastore::applications::userreadbatch::log_stdout: 'logs/datastore-user-read-batch.log'
+
+##############################################################################################################
+#                       USERRESPONSE READ                                                                    #
+##############################################################################################################
+
+datastore::applications::userresponseread::package: datastore-userresponse-read
+datastore::applications::userresponseread::version: 1.0.41
+datastore::applications::userresponseread::announce_timeout: 30000
+datastore::applications::userresponseread::shard: 0
+datastore::applications::userresponseread::enabled: true
+datastore::applications::userresponseread::admin_port: 10004
+datastore::applications::userresponseread::service_port: 8095
+datastore::applications::userresponseread::announce_path: '/services/userresponseread'
+datastore::applications::userresponseread::protocol: 'thriftmux'
+datastore::applications::userresponseread::log_level: INFO
+datastore::applications::userresponseread::log_stdout: 'logs/datastore-userresponse-read.log'
+datastore::applications::userresponseread::log_stderr: 'logs/datastore-userresponse-read.err'
+
+##############################################################################################################
+#                       USERRESPONSE WRITE                                                                   #
+##############################################################################################################
+
+datastore::applications::userresponsewrite::package: datastore-userresponse-write
+datastore::applications::userresponsewrite::version: 1.0.41
+datastore::applications::userresponsewrite::announce_timeout: 30000
+datastore::applications::userresponsewrite::shard: 0
+datastore::applications::userresponsewrite::enabled: true
+datastore::applications::userresponsewrite::admin_port: 9995
+datastore::applications::userresponsewrite::service_port: 8086
+datastore::applications::userresponsewrite::announce_path: '/services/userresponseevent'
+datastore::applications::userresponsewrite::protocol: 'thriftmux'
+datastore::applications::userresponsewrite::processor: avro_kafka
+datastore::applications::userresponsewrite::encoder: camus
+datastore::applications::userresponsewrite::topic: userresponse
+datastore::applications::userresponsewrite::log_level: INFO
+datastore::applications::userresponsewrite::log_stdout: 'logs/datastore-userresponse-write.log'
+datastore::applications::userresponsewrite::log_stderr: 'logs/datastore-userresponse-write.err'        
+
+##############################################################################################################
+#                       MESSAGESTATS READ                                                                    #
+##############################################################################################################
+
+datastore::applications::messagestatsread::package: datastore-messagestats-read
+datastore::applications::messagestatsread::version: 1.0.41
+datastore::applications::messagestatsread::enabled: true
+datastore::applications::messagestatsread::service_port: 8098
+datastore::applications::messagestatsread::announce_path: '/services/messagestatsread'
+datastore::applications::messagestatsread::shard: 0
+datastore::applications::messagestatsread::announce_timeout: 30000
+datastore::applications::messagestatsread::protocol: thriftmux
+datastore::applications::messagestatsread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::messagestatsread::hbase_stats_table: flink-statistics-counters-0
+datastore::applications::messagestatsread::hbase_domain_stats_table: flink-statistics-domain-0
+datastore::applications::messagestatsread::admin_port: 10007
+datastore::applications::messagestatsread::log_stdout: 'logs/datastore-messagestats-read.log'
+datastore::applications::messagestatsread::log_stderr: 'logs/datastore-messagestats-read.err'
+
+##############################################################################################################
+#                       SCHEMA REPOSITORY                                                                    #
+##############################################################################################################
+
+datastore::applications::schemarepository::package: schema-repository
+datastore::applications::schemarepository::version: 0.4.8
+datastore::applications::schemarepository::announce_timeout: 30000
+datastore::applications::schemarepository::shard: 0
+datastore::applications::schemarepository::enabled: true
+datastore::applications::schemarepository::admin_port: 10000
+datastore::applications::schemarepository::service_port: 8091
+datastore::applications::schemarepository::announce_path: '/services/registry'
+datastore::applications::schemarepository::protocol: http
+datastore::applications::schemarepository::storage: zookeeper
+datastore::applications::schemarepository::caching: true
+datastore::applications::schemarepository::log_level: INFO
+datastore::applications::schemarepository::log_stdout: 'logs/schema-repository.log'
+datastore::applications::schemarepository::log_stderr: 'logs/schema-repository.err'
+
+##############################################################################################################
+#                       MOBILERESPONSE READ                                                                   #
+##############################################################################################################
+
+datastore::applications::mobileresponseread::package: datastore-mobileresponse-read
+datastore::applications::mobileresponseread::version: 1.0.41
+datastore::applications::mobileresponseread::announce_timeout: 30000
+datastore::applications::mobileresponseread::shard: 0
+datastore::applications::mobileresponseread::enabled: true
+datastore::applications::mobileresponseread::admin_port: 10006
+datastore::applications::mobileresponseread::service_port: 8097
+datastore::applications::mobileresponseread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::mobileresponseread::hbase_markers_table: mobilestats-marker-0
+datastore::applications::mobileresponseread::hbase_stats_table: mobilestats-speed-0
+datastore::applications::mobileresponseread::hbase_pushstats_table: pushstats-speed-0
+datastore::applications::mobileresponseread::announce_path: '/services/mobileresponseread'
+datastore::applications::mobileresponseread::protocol: 'thriftmux'
+datastore::applications::mobileresponseread::log_level: INFO
+datastore::applications::mobileresponseread::log_stdout: 'logs/datastore-mobileresponse-read.log'
+datastore::applications::mobileresponseread::log_stderr: 'logs/datastore-mobileresponse-read.err' 
+
+##############################################################################################################
+#                       MOBILERESPONSE WRITE                                                                 #
+##############################################################################################################
+
+datastore::applications::mobileresponsewrite::package: datastore-mobileresponse-write
+datastore::applications::mobileresponsewrite::version: 1.0.41
+datastore::applications::mobileresponsewrite::announce_timeout: 30000
+datastore::applications::mobileresponsewrite::shard: 0
+datastore::applications::mobileresponsewrite::enabled: true
+datastore::applications::mobileresponsewrite::admin_port: 10005
+datastore::applications::mobileresponsewrite::service_port: 8096
+datastore::applications::mobileresponsewrite::processor: avro_kafka
+datastore::applications::mobileresponsewrite::announce_path: '/services/mobileresponseevent'
+datastore::applications::mobileresponsewrite::protocol: 'thriftmux'
+datastore::applications::mobileresponsewrite::encoder: camus
+datastore::applications::mobileresponsewrite::topic: mobileresponse
+datastore::applications::mobileresponsewrite::log_level: INFO
+datastore::applications::mobileresponsewrite::log_stdout: 'logs/datastore-mobileresponse-write.log'
+datastore::applications::mobileresponsewrite::log_stderr: 'logs/datastore-mobileresponse-write.err' 
+
+##############################################################################################################
+#                       MOBILE WRITE                                                                 #
+##############################################################################################################
+
+datastore::applications::mobilewrite::package: datastore-mobile-write
+datastore::applications::mobilewrite::version: 1.0.41
+datastore::applications::mobilewrite::announce_timeout: 30000
+datastore::applications::mobilewrite::shard: 0
+datastore::applications::mobilewrite::enabled: true
+datastore::applications::mobilewrite::admin_port: 10008
+datastore::applications::mobilewrite::service_port: 8099
+datastore::applications::mobilewrite::processor: avro_kafka
+datastore::applications::mobilewrite::announce_path: '/services/mobileevent'
+datastore::applications::mobilewrite::protocol: 'thriftmux'
+datastore::applications::mobilewrite::encoder: camus
+datastore::applications::mobilewrite::topic: mobile
+datastore::applications::mobilewrite::log_level: INFO
+datastore::applications::mobilewrite::log_stdout: 'logs/datastore-mobile-write.log'
+datastore::applications::mobilewrite::log_stderr: 'logs/datastore-mobile-write.err'
+
+##############################################################################################################
+#                       MOBILE READ                                                                          #
+##############################################################################################################
+
+datastore::applications::mobileread::package: datastore-mobile-read
+datastore::applications::mobileread::version: 1.0.41
+datastore::applications::mobileread::announce_timeout: 30000
+datastore::applications::mobileread::shard: 0
+datastore::applications::mobileread::enabled: true
+datastore::applications::mobileread::admin_port: 10012
+datastore::applications::mobileread::service_port: 8101
+datastore::applications::mobileread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::mobileread::hbase_table: 'phonedata-0'
+datastore::applications::mobileread::announce_path: '/services/mobileread'
+datastore::applications::mobileread::protocol: 'thriftmux'
+datastore::applications::mobileread::log_level: INFO
+datastore::applications::mobileread::log_stdout: 'logs/datastore-mobile-read.log'
+datastore::applications::mobileread::log_stderr: 'logs/datastore-mobile-read.err'
+datastore::applications::mobileread::redis_host: 'cepdsredis-stg.muc.domeus.com'
+datastore::applications::mobileread::redis_port: 6381
+datastore::applications::mobileread::redis_password: "%{alias('secrets::datastore::applications::mobileread::redis_password')}"
+
+##############################################################################################################
+#                       METADATA WRITE                                                                 #
+##############################################################################################################
+
+datastore::applications::metadatawrite::package: datastore-metadata-write
+datastore::applications::metadatawrite::version: 1.0.41
+datastore::applications::metadatawrite::announce_timeout: 30000
+datastore::applications::metadatawrite::shard: 0
+datastore::applications::metadatawrite::enabled: true
+datastore::applications::metadatawrite::admin_port: 10013
+datastore::applications::metadatawrite::service_port: 8087
+datastore::applications::metadatawrite::processor: avro_kafka
+datastore::applications::metadatawrite::announce_path: '/services/metadataevent'
+datastore::applications::metadatawrite::protocol: 'thriftmux'
+datastore::applications::metadatawrite::encoder: camus
+datastore::applications::metadatawrite::topic: metadata
+datastore::applications::metadatawrite::log_level: INFO
+datastore::applications::metadatawrite::log_stdout: 'logs/datastore-metadata-write.log'
+datastore::applications::metadatawrite::log_stderr: 'logs/datastore-metadata-write.err' 
+
+##############################################################################################################
+#                       RELATEDDATA READ                                                                     #
+##############################################################################################################
+
+datastore::applications::relateddataread::package: datastore-relateddata-read
+datastore::applications::relateddataread::version: 1.0.43
+datastore::applications::relateddataread::announce_timeout: 30000
+datastore::applications::relateddataread::shard: 0
+datastore::applications::relateddataread::enabled: true
+datastore::applications::relateddataread::admin_port: 9994
+datastore::applications::relateddataread::service_port: 8085
+datastore::applications::relateddataread::announce_path: '/services/relateddataread'
+datastore::applications::relateddataread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::relateddataread::hbase_fast_table: relateddata-speed-0
+datastore::applications::relateddataread::hbaseclient_rpc_timeout: 60000
+datastore::applications::relateddataread::hbaseclient_scanner_timeout: 60000
+datastore::applications::relateddataread::protocol: 'thriftmux'
+datastore::applications::relateddataread::log_level: INFO
+datastore::applications::relateddataread::log_stdout: 'logs/datastore-relateddata-read.log'
+datastore::applications::relateddataread::log_stderr: 'logs/datastore-relateddata-read.err' 
+
+##############################################################################################################
+#                       RELATEDDATA READ BATCH                                                               #
+##############################################################################################################
+
+datastore::applications::relateddatareadbatch::enabled: true
+datastore::applications::relateddatareadbatch::admin_port: 10002
+datastore::applications::relateddatareadbatch::service_port: 8092
+datastore::applications::relateddatareadbatch::scheme: zk
+datastore::applications::relateddatareadbatch::announce_path: '/services/relateddatareadbatch'
+datastore::applications::relateddatareadbatch::announce_timeout: 30000
+datastore::applications::relateddatareadbatch::protocol: thriftmux
+datastore::applications::relateddatareadbatch::shard: 0
+datastore::applications::relateddatareadbatch::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::relateddatareadbatch::hbase_table: relateddata-batchtest-0
+datastore::applications::relateddatareadbatch::log_level: INFO
+datastore::applications::relateddatareadbatch::log_stderr: 'logs/datastore-relateddata-read-batch.err'
+datastore::applications::relateddatareadbatch::log_stdout: 'logs/datastore-relateddata-read-batch.log'
+
+##############################################################################################################
+#                       RELATEDDATA WRITE                                                                    #
+##############################################################################################################
+
+datastore::applications::relateddatawrite::package: datastore-relateddata-write
+datastore::applications::relateddatawrite::version: 1.0.43
+datastore::applications::relateddatawrite::announce_timeout: 30000
+datastore::applications::relateddatawrite::shard: 0
+datastore::applications::relateddatawrite::enabled: true
+datastore::applications::relateddatawrite::admin_port: 9993
+datastore::applications::relateddatawrite::service_port: 8084
+datastore::applications::relateddatawrite::announce_path: '/services/relateddataevent'
+datastore::applications::relateddatawrite::processor: avro_kafka
+datastore::applications::relateddatawrite::encoder: camus
+datastore::applications::relateddatawrite::topic: relateddata
+datastore::applications::relateddatawrite::protocol: 'thriftmux'
+datastore::applications::relateddatawrite::log_level: INFO
+datastore::applications::relateddatawrite::log_stdout: 'logs/datastore-relateddata-write.log'
+datastore::applications::relateddatawrite::log_stderr: 'logs/datastore-relateddata-write.err' 
+
+##############################################################################################################
+#                       MEMBERSHIP WRITE                                                                     #
+##############################################################################################################
+
+datastore::applications::membershipwrite::package: datastore-membership-write
+datastore::applications::membershipwrite::version: 1.0.41
+datastore::applications::membershipwrite::announce_timeout: 30000
+datastore::applications::membershipwrite::shard: 0
+datastore::applications::membershipwrite::topic: membership
+datastore::applications::membershipwrite::encoder: camus
+datastore::applications::membershipwrite::enabled: true
+datastore::applications::membershipwrite::processor: avro_kafka
+datastore::applications::membershipwrite::admin_port: 10001
+datastore::applications::membershipwrite::service_port: 8093
+datastore::applications::membershipwrite::announce_path: '/services/membershipevent'
+datastore::applications::membershipwrite::protocol: 'thriftmux'
+datastore::applications::membershipwrite::log_level: INFO
+datastore::applications::membershipwrite::log_stdout: 'logs/datastore-membership-write.log'
+datastore::applications::membershipwrite::log_stderr: 'logs/datastore-membership-write.err'
+
+##############################################################################################################
+#                       KPI READ                                                                             #
+##############################################################################################################
+
+datastore::applications::kpiread::package: datastore-kpi-read
+datastore::applications::kpiread::version: 1.0.41
+datastore::applications::kpiread::announce_timeout: 30000
+datastore::applications::kpiread::shard: 0
+datastore::applications::kpiread::enabled: true
+datastore::applications::kpiread::admin_port: 10009
+datastore::applications::kpiread::service_port: 8088
+datastore::applications::kpiread::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::kpiread::hbase_customerkpis_table: tenant-data
+datastore::applications::kpiread::announce_path: '/services/kpiread'
+datastore::applications::kpiread::protocol: 'thriftmux'
+datastore::applications::kpiread::log_level: INFO
+datastore::applications::kpiread::log_stdout: 'logs/datastore-kpi-read.log'
+datastore::applications::kpiread::log_stderr: 'logs/datastore-kpi-read.err'
+
+##############################################################################################################
+#                       CONNECT WRITE                                                                 #
+##############################################################################################################
+
+datastore::applications::connectwrite::package: datastore-connect-write
+datastore::applications::connectwrite::version: '1.0.41'
+datastore::applications::connectwrite::announce_timeout: 30000
+datastore::applications::connectwrite::shard: 0
+datastore::applications::connectwrite::enabled: true
+datastore::applications::connectwrite::admin_port: 10010
+datastore::applications::connectwrite::service_port: 8089
+datastore::applications::connectwrite::processor: avro_kafka
+datastore::applications::connectwrite::announce_path: '/services/connectevent'
+datastore::applications::connectwrite::protocol: 'thriftmux'
+datastore::applications::connectwrite::encoder: camus
+datastore::applications::connectwrite::topic: mct-processor
+datastore::applications::connectwrite::log_level: INFO
+datastore::applications::connectwrite::log_stdout: 'logs/datastore-connect-write.log'
+datastore::applications::connectwrite::log_stderr: 'logs/datastore-connect-write.err' 
+
+##############################################################################################################
+#                       SELECTION ENGINE                                                                     #
+##############################################################################################################
+
+datastore::applications::selectionengine::package: selection-engine-application
+datastore::applications::selectionengine::version: 0.16.43
+datastore::applications::selectionengine::java_opts:
+  - "-Xmx16g -Xms16g"
+  - "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode"
+  - "-Xloggc:/opt/selection-engine-application/logs/gc.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=10M -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCCause"
+  - "-Djava.net.preferIPv4Stack=true"
+  - "-Dlogback.configurationFile=/opt/selection-engine-application/logback.xml"
+datastore::applications::selectionengine::limit_nofile: 131072
+datastore::applications::selectionengine::node_counter: elasticsearch
+datastore::applications::selectionengine::node_count_timeout: '5.minutes'
+datastore::applications::selectionengine::tenant_whitelist: '[]'
+datastore::applications::selectionengine::scroll_timeout_sec: 100
+datastore::applications::selectionengine::supported_user_data_types: ["Membership","Sendout","Bounce","Click","Forward","Read","Unsubscribe","Skip","Feedback","Accept","MemberAttribute","RelatedData","MobileBehavior","dmp"]
+datastore::applications::selectionengine::announce_path: '/services/selections'
+datastore::applications::selectionengine::announce_timeout: 30000
+datastore::applications::selectionengine::shard: 0
+datastore::applications::selectionengine::service_port: 60022
+datastore::applications::selectionengine::admin_port: 10003
+datastore::applications::selectionengine::optimizer_enabled: true
+datastore::applications::selectionengine::log_level: INFO
+datastore::applications::selectionengine::log_stdout: 'logs/selection-engine-application.log'
+datastore::applications::selectionengine::log_stderr: 'logs/selection-engine-application.err'
+datastore::applications::selectionengine::skip_rd: false
+
+datastore::applications::selectionengine::async_expire_order_after_minutes: 60
+datastore::applications::selectionengine::async_clean_finished_after_hours: 72
+datastore::applications::selectionengine::async_clean_all_after_days: 21
+datastore::applications::selectionengine::async_cleanup_bulk_size: 200
+datastore::applications::selectionengine::async_store_path: "/opt/selection-engine-application/store"
+datastore::applications::selectionengine::async_hdfs_store_path: "/selectionengine/store"
+datastore::applications::selectionengine::async_quartz_filename: "quartz.properties"
+datastore::applications::selectionengine::threadpool_io_size: 500
+datastore::applications::selectionengine::threadpool_cpu_size: 500
+datastore::applications::selectionengine::async_selection_timeout: '30.minutes'
+datastore::applications::selectionengine::scroll_timeout: '100.seconds'
+datastore::applications::selectionengine::scroll_page_size: 10000
+datastore::applications::selectionengine::async_selection_max_parallelism: 6
+
+datastore::applications::selectionengine::rd_fixed_thread_pool: 64
+datastore::applications::selectionengine::rd_max_selection_parallelism: 4
+datastore::applications::selectionengine::rd_query_scroll_size: 10000
+datastore::applications::selectionengine::rd_query_timeout: '15.minutes'
+datastore::applications::selectionengine::rd_node_calculation_timeout: '15.minutes'
+datastore::applications::selectionengine::rd_await_node_enabled: 'false'
+datastore::applications::selectionengine::rd_chunk_max_parallelism: 1
+datastore::applications::selectionengine::rd_number_of_elements_in_chunk: 9999
+datastore::applications::selectionengine::es_connection_timeout: 60000
+datastore::applications::selectionengine::es_socket_timeout: 120000
+datastore::applications::selectionengine::rd_node_count_timeout: '30.minutes'
+
+datastore::applications::selectionengine::postgres_host_port: "hs13db03:5432"
+datastore::applications::selectionengine::postgres_dbname: "selection_engine"
+datastore::applications::selectionengine::postgres_login: "selection_engine_user"
+datastore::applications::selectionengine::postgres_password: "%{alias('secrets::datastore::applications::selectionengine::postgres_password')}"
+datastore::applications::selectionengine::postgres_pool_size: 25
+datastore::applications::selectionengine::postgres_default_timeout_sec: 10
+datastore::applications::selectionengine::postgres_validate_timeout_sec: 2
+datastore::applications::selectionengine::postgres_test_on_borrow: 'true'
+datastore::applications::selectionengine::postgres_max_idle: 25
+datastore::applications::selectionengine::postgres_max_total: 25
+datastore::applications::selectionengine::postgres_max_wait_millis: 30000
+datastore::applications::selectionengine::postgres_max_conn_lifetime_millis: 600000
+datastore::applications::selectionengine::postgres_test_while_idle: 'true'
+
+datastore::applications::selectionengine::quartz:
+  schedulers:
+    'selection':
+      threadCount: 5
+      schedulerName: 'SelectionEngineCluster' #left original name as I'm unable to tell what will happen if we change existing scheduler name
+    'filter':
+      threadCount: 5
+      schedulerName: 'FilterScheduler'
+    'count':
+      threadCount: 5
+      schedulerName: 'CountScheduler'
+  connection:
+    org.quartz.dataSource.pgds.URL: 'jdbc:postgresql://hs13db03:5432/selection_engine_stg'
+    org.quartz.dataSource.pgds.user: 'selection_engine_user'
+    org.quartz.dataSource.pgds.password: "%{alias('secrets::datastore::applications::selectionengine::quartz::datasource_password')}"
+    org.quartz.dataSource.pgds.maxConnections: 25
+    org.quartz.dataSource.pgds.maxIdleTime: 120
+    org.quartz.jobStore.clusterCheckinInterval: 15000
+    org.quartz.dataSource.pgds.TestConnectionOnCheckout: 'true'
+    org.quartz.dataSource.pgds.TestConnectionOnCheckin: 'false'
+    org.quartz.dataSource.pgds.validationQuery: 'select 1'
+  
+##############################################################################################################
+#                       DS READER                                                                            #
+##############################################################################################################
+
+datastore::applications::dsreader::package: ds-reader
+datastore::applications::dsreader::version: '0.77'
+datastore::applications::dsreader::admin_port: 9003
+datastore::applications::dsreader::service_port: 8889
+datastore::applications::dsreader::java_xms: '4g'
+datastore::applications::dsreader::java_xmx: '4g'
+datastore::applications::dsreader::max_threads: 400
+datastore::applications::dsreader::limit_nofile: 131072
+datastore::applications::dsreader::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::dsreader::hbase_table: flink-statistics-counters-0
+datastore::applications::dsreader::hbase_domain_table: flink-statistics-domain-0
+datastore::applications::dsreader::hbase_userresponse_table: userresponse-speed-0
+datastore::applications::dsreader::hbase_conversion_table: flink-statistics-conversion-0
+datastore::applications::dsreader::appname: dsreader
+datastore::applications::dsreader::jwt_secret_key: "%{alias('secrets::datastore::applications::dsreader::jwt_secret_key')}"
+datastore::applications::dsreader::internal_security_token: 'deBcF5QA27DjuUrTkkNS'
+datastore::applications::dsreader::scan_strategy: 'buckets_regex_parallel'
+datastore::applications::dsreader::logging_config: '/opt/ds-reader/config/logback.xml'
+datastore::applications::dsreader::logback:
+  service_file: 'logs/ds-reader.log'
+  reports_file: 'logs/reports.logstash'
+datastore::applications::dsreader::xssfilter_enabled: true
+
+##############################################################################################################
+#                       LOCKING SERVICE QUERY SERVER                                                         #
+##############################################################################################################
+
+datastore::applications::lockingservicequeryserver::package: locking-service-query-server
+datastore::applications::lockingservicequeryserver::version: 2.0.6
+datastore::applications::lockingservicequeryserver::announce_timeout: 30000
+datastore::applications::lockingservicequeryserver::shard: 0
+datastore::applications::lockingservicequeryserver::hbase_table: process
+datastore::applications::lockingservicequeryserver::enabled: true
+datastore::applications::lockingservicequeryserver::port: 8094
+datastore::applications::lockingservicequeryserver::announce_path: '/services/locking-service'
+datastore::applications::lockingservicequeryserver::protocol: http
+datastore::applications::lockingservicequeryserver::log_level: INFO
+datastore::applications::lockingservicequeryserver::storage: hbase
+datastore::applications::lockingservicequeryserver::hbase_znode: "%{hiera('common_apps_settings.hbase.znode')}"
+datastore::applications::lockingservicequeryserver::notactivesince: 30000
+datastore::applications::lockingservicequeryserver::stalledafterminutes: 5
+datastore::applications::lockingservicequeryserver::blacklistservice:
+  required: "true"
+  blacklist_file_path: "/mds/tenant_blacklist.conf"
+  refresh:
+    value: 5
+    unit: "MINUTES"
+
+##############################################################################################################
+#                       STATS COLLECTOR                                                                      #
+##############################################################################################################
+
+datastore::applications::statscollector::package: 'datastore-stats-collector'
+datastore::applications::statscollector::version: '1.0.41'
+datastore::applications::statscollector::announce_path: '/services/collectstats'
+datastore::applications::statscollector::announce_timeout: '30000'
+datastore::applications::statscollector::enabled: 'true'
+datastore::applications::statscollector::admin_port: 9999
+datastore::applications::statscollector::service_port: 8080
+datastore::applications::statscollector::processor: 'kafka'
+datastore::applications::statscollector::protocol: 'http'
+datastore::applications::statscollector::topic: 'stats-collector'
+datastore::applications::statscollector::shard: 0
+datastore::applications::statscollector::log_level: 'INFO'
+datastore::applications::statscollector::log_stdout: 'logs/datastore-stats-collector.log'
+datastore::applications::statscollector::log_stderr: 'logs/datastore-stats-collector.err'
+
+##############################################################################################################
+#                       ETL SERVICE MAINTAINER                                                               #
+##############################################################################################################
+
+datastore::applications::etlservicemaintainer::package: etl-server
+datastore::applications::etlservicemaintainer::version: '6.74.0-1'
+datastore::applications::etlservicemaintainer::log_level: INFO
+datastore::applications::etlservicemaintainer::log_stdout: '/opt/etl-server/logs/etl-server.log'
+datastore::applications::etlservicemaintainer::tools:
+  batch-user-snapshot-creator-flink-etl: 2.3.53
+  batch-snapshot-sweeper-compact-etl: 2.2.16
+  batch-snapshot-sweeper-sweep-etl: 2.2.16
+  etl-service-raw-data-export: 0.9.1
+  etl-service-single-user-data-export: 0.9.1
+  etl-service-address-data-export: 0.9.1
+  etl-service-simplified-data-export: 0.9.1
+  etl-service-coupon-export: 0.9.1
+  etl-service-related-data-import: 0.9.1
+datastore::applications::etlservicemaintainer::templates: 
+  'application.properties':
+    spring.thymeleaf.cache: 'false'
+    logging.level.org.apache.zookeeper.ClientCnxn: 'INFO'
+    spring.application.name: 'etl-server-maintainer'
+    server.port: 8079
+    spring.profiles.active: 'maintainer,prod'
+    etl.server.flink.supportedJobTypes: 'SC,RDE,SDE,ADE,CE,SUDE,RDI'
+    hdfs.uploadFilePath: '/dataUpload/'
+    hdfs.user: 'snapshots'
+    etl.server.flink.propertiesFilePath: '/flink/snapshots_01.properties'
+    etl.server.flink.envParallelism: 32
+    etl.server.flink.configurationDirectory: '/etc/flink/conf'
+    etl.server.discovery.application.names: 'etl-server,etl-server-maintainer'
+    etl.server.jobSourceDir: '/opt/etl-service/pipelines'
+    etl.server.flink.job.scheduler.enabled: 'true'
+    etl.server.flink.job.scheduler.fixedDelay: '30'
+    etl.server.flink.job.scheduler.statusCheck.enabled: 'false'
+    etl.server.flink.job.scheduler.statusCheck.fixedDelay: '60'
+    etl.server.flink.job.scheduler.slotsPerJobType: '{"default":32}'
+    etl.server.flink.job.scheduler.freeSlotsBuffer: 0
+    etl.server.flink.job.scheduler.oneJobAtTime: false
+    etl.server.flink.job.scheduler.resubmitCount: 5
+    etl.server.state.scheduler.fixedDelay: 30
+    restTemplate.httpClient.connectionTimeout: 15000
+    restTemplate.httpClient.readTimeout: 15000
+    flink.jobmanager.max.slots.number: 160
+    spring.datasource.url: 'jdbc:postgresql://hs13db03:5432/etl_server'
+    spring.datasource.username: 'etl_server_user'
+    spring.datasource.password: "%{alias('secrets::datastore::applications::etlservicemaintainer::templates::application_properties::datasource_password')}"
+    spring.datasource.driverClassName: 'org.postgresql.Driver'
+    spring.datasource.tomcat.test-on-borrow: 'true'
+    spring.datasource.tomcat.test-while-idle: 'true'
+    spring.datasource.tomcat.validation-query: 'SELECT 1'
+    spring.datasource.hikari.maximumPoolSize: 5
+    spring.jpa.hibernate.ddl-auto: update
+    spring.jpa.database-platform: 'org.hibernate.dialect.PostgreSQLDialect'
+    spring.jpa.hibernate.use-new-id-generator-mappings: 'true'
+    spring.http.multipart.max-file-size: '512MB'
+    spring.http.multipart.max-request-size: '512MB'
+    spring.servlet.multipart.max-file-size: '512MB'
+    spring.servlet.multipart.max-request-size: '512MB'
+    etl.server.asyncThreadMaxPoolSize: 20
+    etl.server.extendedContainerEnabled: true
+    etl.server.flink.extendedContainer.propertiesFilePath: '/flink/snapshots_etl_extended.properties'
+    flink.jobmanager.extended.max.slots.number: 128
+    etl.server.extendedContainerAttemptUpperLimit: 4
+  'azkaban.properties':
+    server: "os13azkaban01.muc.domeus.com"
+    username: "%{hiera('common_apps_settings.azkaban.user')}"
+    password: "%{hiera('common_apps_settings.azkaban.password')}"
+    flows: '{"flows": [{"type": "sweeper_sweep","project": "batch","flow": "snapshot-sweeper-sweep"}]}'
+  'bootstrap.properties':
+    spring.cloud.zookeeper.broker.nodes: 
+    spring.cloud.zookeeper.enabled: false
+    spring.cloud.zookeeper.servicesBasePath: '/services'
+    logging.file: '/opt/etl-server/logs/etl-server.log'
+  'security.properties':
+    management.port: 9002
+    management.security.enabled: 'true'
+    endpoints.sensitive: 'true'
+    endpoints.restart.enabled: 'true'
+    endpoints.shutdown.enabled: 'true'
+    authentication-header-name: 'auth-token'
+    enable-security-check: 'false'
+    jwtAuth.enabled: 'false'
+    jwtAuth.expiration: 'true'
+    jwtAuth.secretKey: "%{alias('secrets::datastore::applications::etlservicemaintainer::templates::security_properties::jwtauth_secretkey')}"
+    jwtAuth.clockSkew: 5
+  'logback.xml': {}
+  'export.properties':
+    ExportConfiguration.inputPathResponses: '/mds/snapshots/userresponse/data/'
+    ExportConfiguration.inputPathProfiles: '/mds/snapshots/user/data/'
+    ExportConfiguration.metaPathProfiles: '/mds/snapshots/user/meta/'
+    ExportConfiguration.outputPath: '/exports'
+    ExportConfiguration.timezone: 'Europe/Berlin'
+    ExportConfiguration.parallelism: '{"default":32}'
+    ExportConfiguration.membershipCompactionMetaPath: '/mds/facts/membership/compaction/meta'
+    ExportConfiguration.membershipCompactionDataPath: '/mds/facts/membership/compaction/data'
+    ExportConfiguration.profilesOutputPath: '/mds/snapshots/user/data/'
+    ExportConfiguration.profilesFactsMetaPath: '/mds/facts/user/compaction/meta'
+    ExportConfiguration.profilesFactsPaths: '/mds/facts/user/compaction/data'
+    ExportConfiguration.groupCompactionDataPath: '/mds/facts/group/compaction/data'
+    ExportConfiguration.bigTenantsPartitions: '99907-3'
+    ExportConfiguration.snapshotPartitionsDefault: 32
+    ExportConfiguration.limitSendoutHistoricalDays: 1110
+    snapshot.topic.userresponses: 'userresponse'
+    snapshot.topic.userprofile: 'userprofile'
+    userresponse.schema.id: 'latest'
+    ExportConfiguration.restartAttempts: 2
+  'dsClient.properties':
+    datastore.user.write.connection.string:
+    datastore.user.write.conf:
+    datastore.relateddata.write.conf: 'withCircuitBreaker = false,\ client {\ maxRetries = 3,\ thriftMux = true,\ workerThreads = 100,\ workerThreadPoolBufferSize = 100,\ checkServiceAvailability = false\ },\ processing {\ timeout = 10.seconds\ },\ recovery {\ fileDir = "./work/datastore/recovery/relateddata",\ period = 1.minute,\ threads = 50\ }'
+  'fastImport.properties':
+    import.job-statistics-topic:
+    import.process-event-topic:
+    import.broker-address:
+    import.zookeeper-quorum:
+    import.schema-registry-path:
+    import.status-check.url:
+    import.status-check.interval:
+    import.status-check.retry-count:
+  'snapshotCreator.properties':
+    snapcreator.user.facts.input.path: '/mds/facts/user/compaction/data,/mds/facts/dsattributes/compaction/data'
+    snapcreator.membership.facts.input.path: '/mds/facts/membership/compaction/data'
+    snapcreator.group.facts.input.path: '/mds/facts/group/compaction/data'
+    snapcreator.snapshot.path: '/mds/snapshots/user/data/'
+    snapcreator.meta.path: '/mds/snapshots/user/meta/'
+    snapcreator.meta.output.path: '/mds/snapshots/user/meta/'
+    timezone: 'Europe/Berlin'
+    tenant.partitions.default: 32
+    snapcreator.parallelism: 32
+    snapcreator.parallelism.source: 32
+    snapcreator.parallelism.source.group: 32
+    snapcreator.parallelism.mergeprofile: 32
+    snapcreator.parallelism.storeprofile: 32
+    facts.from: '2018/03/08/01-00'
+  'import.properties':
+    relateddata.import.parallelism: '{"flink.source.parallelism":20, "flink.sink.parallelism":20}'
+  'sweeper.properties':
+    batch.job.rootPath: '/mds/snapshots/userresponse/data'
+    sweeper.compact.snapshot.prefixes: 'snapshot,conversion'
+    parquet.compression: 'SNAPPY'
+    sweeper.compact.type: monthly
+    sweeper.compact.startTime:
+    sweeper.compact.flink.parallelism: '{"default":16}'
+    sweeper.sweep.timeWindow: 09:00-15:00
+    sweeper.sweep.temp.base.dir: '/tmp/sweeper-sweep'
+
+##############################################################################################################
+#                       ETL SERVICE                                                                          #
+##############################################################################################################
+
+datastore::applications::etlservice::package: etl-server
+datastore::applications::etlservice::version: '6.74.0-1'
+datastore::applications::etlservice::log_level: INFO
+datastore::applications::etlservice::log_stdout: '/opt/etl-server/logs/etl-server.log'
+datastore::applications::etlservice::templates: 
+  'application.properties':
+    spring.thymeleaf.cache: 'false'
+    logging.level.org.apache.zookeeper.ClientCnxn: 'INFO'
+    spring.application.name: 'etl-server'
+    server.port: '8079'
+    spring.profiles.active: 'service,prod'
+    etl.server.flink.supportedJobTypes:
+    hdfs.uploadFilePath: '/dataUpload/'
+    hdfs.user: 'snapshots'
+    etl.server.flink.propertiesFilePath: '/flink/snapshots.properties'
+    etl.server.flink.envParallelism: '32'
+    etl.server.flink.configurationDirectory: '/etc/flink/conf'
+    etl.server.discovery.application.names: 'etl-server,etl-server-maintainer'
+    etl.server.jobSourceDir: '/opt/etl-service/pipelines'
+    etl.server.flink.job.scheduler.enabled: 'false'
+    etl.server.flink.job.scheduler.fixedDelay: '30'
+    etl.server.flink.job.scheduler.statusCheck.enabled: 'false'
+    etl.server.flink.job.scheduler.statusCheck.fixedDelay: '60'
+    etl.server.flink.job.scheduler.sweeper.enabled: 'false'
+    etl.server.flink.job.scheduler.sweeper.daily.cron: 
+    etl.server.flink.job.scheduler.sweeper.monthly.cron:
+    etl.server.flink.job.scheduler.slotsPerJobType: '{"default":32}'
+    etl.server.flink.job.scheduler.freeSlotsBuffer: '0'
+    etl.server.flink.job.scheduler.oneJobAtTime: 'false'
+    etl.server.flink.job.scheduler.resubmitCount:
+    etl.server.state.scheduler.fixedDelay: '30'
+    restTemplate.httpClient.connectionTimeout: '15000'
+    restTemplate.httpClient.readTimeout: '15000'
+    flink.jobmanager.max.slots.number: '320'
+    spring.datasource.url: 'jdbc:postgresql://hs13db03:5432/etl_server'
+    spring.datasource.username: 'etl_server_user'
+    spring.datasource.password: "%{alias('secrets::datastore::applications::etlservicemaintainer::templates::application_properties::datasource_password')}"
+    spring.datasource.driverClassName: 'org.postgresql.Driver'
+    spring.datasource.tomcat.test-on-borrow: 'true'
+    spring.datasource.tomcat.test-while-idle: 'true'
+    spring.datasource.tomcat.validation-query: 'SELECT 1'
+    spring.datasource.hikari.maximumPoolSize: '5'
+    spring.jpa.hibernate.ddl-auto: 'update'
+    spring.jpa.database-platform: 'org.hibernate.dialect.PostgreSQLDialect'
+    spring.jpa.hibernate.use-new-id-generator-mappings: 'true'
+    spring.http.multipart.max-file-size: '512MB'
+    spring.http.multipart.max-request-size: '512MB'
+    spring.servlet.multipart.max-file-size: '512MB'
+    spring.servlet.multipart.max-request-size: '512MB'
+    etl.server.asyncThreadMaxPoolSize: '20'
+  'azkaban.properties':
+    server: "os13azkaban01.muc.domeus.com"
+    username: "%{hiera('common_apps_settings.azkaban.user')}"
+    password: "%{hiera('common_apps_settings.azkaban.password')}"
+    flows: '{"flows": [{"type": "sweeper_sweep","project": "batch","flow": "snapshot-sweeper-sweep"}]}'
+  'bootstrap.properties':
+    spring.cloud.zookeeper.broker.nodes: '/kafka/brokers/ids'
+    spring.cloud.zookeeper.enabled: 'false'
+    spring.cloud.zookeeper.servicesBasePath: '/services'
+    logging.file: '/opt/etl-server/logs/etl-server.log'
+  'security.properties':
+    management.port: 9002
+    management.security.enabled: 'true'
+    endpoints.sensitive: 'true'
+    endpoints.restart.enabled: 'true'
+    endpoints.shutdown.enabled: 'true'
+    authentication-header-name: 'auth-token'
+    enable-security-check: 'false'
+    jwtAuth.enabled: 'false'
+    jwtAuth.expiration: 'true'
+    jwtAuth.secretKey: "%{alias('secrets::datastore::applications::etlservice::templates::security_properties::jwtauth_secretkey')}"
+    jwtAuth.clockSkew: 5
+  'logback.xml': {}
+  'export.properties':
+    ExportConfiguration.inputPathResponses: '/mds/snapshots/userresponse/data/'
+    ExportConfiguration.inputPathProfiles: '/mds/snapshots/user/data/'
+    ExportConfiguration.metaPathProfiles: '/mds/snapshots/user/meta/'
+    ExportConfiguration.outputPath: '/exports'
+    ExportConfiguration.timezone: 'Europe/Berlin'
+    ExportConfiguration.parallelism: '{"default":32}'
+    ExportConfiguration.membershipCompactionMetaPath: '/mds/facts/membership/compaction/meta'
+    ExportConfiguration.membershipCompactionDataPath: '/mds/facts/membership/compaction/data'
+    ExportConfiguration.profilesOutputPath: '/mds/snapshots/user/data/'
+    ExportConfiguration.profilesFactsMetaPath: '/mds/facts/user/compaction/meta'
+    ExportConfiguration.profilesFactsPaths: '/mds/facts/user/compaction/data'
+    ExportConfiguration.groupCompactionDataPath: '/mds/facts/group/compaction/data'
+    ExportConfiguration.bigTenantsPartitions: '99907-3'
+    ExportConfiguration.snapshotPartitionsDefault: 32
+    ExportConfiguration.limitSendoutHistoricalDays: 1110
+    snapshot.topic.userresponses: 'userresponse'
+    snapshot.topic.userprofile: 'userprofile'
+    userresponse.schema.id: 'latest'
+  'dsClient.properties':
+    datastore.user.write.connection.string:
+    datastore.user.write.conf:
+    datastore.relateddata.write.conf: 'with/CircuitBreaker = false,\ client {\ maxRetries = 3,\ thriftMux = true,\ workerThreads = 100,\ workerThreadPoolBufferSize = 100,\ checkServiceAvailability = false\ },\ processing {\ timeout = 10.seconds\ },\ recovery {\ fileDir = "./work/datastore/recovery/relateddata",\ period = 1.minute,\ threads = 50\ }'
+  'fastImport.properties':
+    import.job-statistics-topic:
+    import.process-event-topic:
+    import.broker-address:
+    import.zookeeper-quorum:
+    import.schema-registry-path:
+    import.status-check.url:
+    import.status-check.interval:
+    import.status-check.retry-count:
+  'snapshotCreator.properties':
+    snapcreator.user.facts.input.path: '/mds/facts/user/compaction/data,/mds/facts/dsattributes/compaction/data'
+    snapcreator.membership.facts.input.path: '/mds/facts/membership/compaction/data'
+    snapcreator.group.facts.input.path: '/mds/facts/group/compaction/data'
+    snapcreator.snapshot.path: '/mds/snapshots/user/data/'
+    snapcreator.meta.path: '/mds/snapshots/user/meta/'
+    snapcreator.meta.output.path: '/mds/snapshots/user/meta/'
+    timezone: 'Europe/Berlin'
+    tenant.partitions.default: 32
+    snapcreator.parallelism: 32
+    snapcreator.parallelism.source: 32
+    snapcreator.parallelism.source.group: 32
+    snapcreator.parallelism.mergeprofile: 32
+    snapcreator.parallelism.storeprofile: 32
+    facts.from: '2018/03/08/01-00'
+  'import.properties':
+    relateddata.import.parallelism: '{"flink.source.parallelism":20, "flink.sink.parallelism":20}'
+  'sweeper.properties':
+    batch.job.rootPath: '/mds/snapshots/userresponse/data'
+    sweeper.compact.snapshot.prefixes: 'snapshot,conversion'
+    parquet.compression: 'SNAPPY'
+    sweeper.compact.type: monthly
+    sweeper.compact.startTime:
+    sweeper.compact.flink.parallelism: '{"default":16}'
+    sweeper.sweep.temp.base.dir: '/tmp/sweeper-sweep'

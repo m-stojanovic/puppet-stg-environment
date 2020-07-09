@@ -1,0 +1,45 @@
+#!/usr/bin/python
+
+import sys
+
+class RackTopology:
+	# Make sure you include the absolute path to topology.csv
+	DEFAULT_TOPOLOGY_FILE = '/etc/hadoop/conf/topology.csv'
+	DEFAULT_RACK = '/rack0'
+
+	def __init__(self, filename = DEFAULT_TOPOLOGY_FILE):
+		self._filename = filename
+		self._mapping = dict()
+
+		self._load_topology(filename)
+
+	def _load_topology(self, filename):
+		'''
+		Load a CSV-ish mapping file. Should be two columns with the first being the
+		hostname or IP and the second the rack name. If a line isn't well formed,
+		it's discarded. Each field is stripped of any leading or trailing space. If
+		the file fails to load for any reason, all hosts will be in DEFAULT_RACK.
+		Column separator is comma.
+		'''
+		try:
+			f = file(filename, 'r')
+
+			for line in f:
+				fields = line.split(',')
+
+				if len(fields) == 2:
+					self._mapping[fields[0].strip()] = fields[1].strip()
+		except:
+			pass
+
+	def rack_of(self, host):
+		if self._mapping.has_key(host):
+			return self._mapping[host]
+		else:
+			return RackTopology.DEFAULT_RACK
+
+if __name__ == '__main__':
+	app = RackTopology()
+
+	for node in sys.argv[1:]:
+		print app.rack_of(node)

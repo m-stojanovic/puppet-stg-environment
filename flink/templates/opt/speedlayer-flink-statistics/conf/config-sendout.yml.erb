@@ -1,0 +1,11 @@
+bootstrap.servers: <%= @kafka_brokers %>
+zookeeper.connect: <%= @zookeeper_connect %>
+ds.schema.registry.url: zk!<%= @zookeeper_connect %>!<%= @defaults['ds_schema_registry_path'] %>
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>
+datastore.user.response.write.connectionString: zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!<%= @defaults['services_znodes']['userresponseevent'] %>
+
+hbase.rootdir: <%= @defaults['hbase_rootdir'] %>
+hbase.zookeeper.quorum: <%= @zookeeper_connect_hbase %>
+hbase.zookeeper.property.clientPort: <%= @zookeeper_port %>

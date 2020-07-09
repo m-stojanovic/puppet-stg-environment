@@ -1,0 +1,46 @@
+version: 5
+
+defaults:
+  data_hash: yaml_data
+  datadir: hieradata
+
+hierarchy:
+  - name: Secrets
+    lookup_key: eyaml_lookup_key
+    paths:
+      - "secrets/modules/%{module_name}.eyaml"
+      - secrets/common.eyaml
+    options:
+      pkcs7_private_key: /etc/puppetlabs/puppet/eyaml/stg/private_key.pkcs7.pem
+      pkcs7_public_key:  /etc/puppetlabs/puppet/eyaml/stg/public_key.pkcs7.pem
+
+  - name: Secrets for roles
+    lookup_key: eyaml_lookup_key
+    mapped_paths: [hostroles, role, "secrets/roles/%{role}.eyaml"]
+    options:
+      pkcs7_private_key: /etc/puppetlabs/puppet/eyaml/stg/private_key.pkcs7.pem
+      pkcs7_public_key:  /etc/puppetlabs/puppet/eyaml/stg/public_key.pkcs7.pem
+
+  - name: Per host
+    path: "hosts/%{trusted.certname}"
+
+  - name: Server type - virtual / physical
+    path: "virtualization/%{facts.virtual}.yaml"
+    
+  - name: Per OS data (common)
+    path: "os/%{facts.os.family}/common.yaml"
+
+  - name: Per OS data (release/codename)
+    path: "os/%{facts.os.family}/%{facts.os.distro.codename}.yaml"
+    
+  - name: Per host role
+    mapped_paths: [hostroles, role, "roles/%{role}.yaml"]
+
+  - name: Per module data
+    path: "modules/%{module_name}.yaml"
+
+  - name: hadoop general
+    path: hadoop.yaml
+
+  - name: Common data
+    path: common.yaml

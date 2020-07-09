@@ -1,0 +1,30 @@
+statsCollectorApp {
+  statsCollector {
+    service {
+      enabled = true
+      port = <%= @service_port %>
+      protocol = "http"
+      scheme = "<%= scope['datastore::zk_scheme'] %>"
+      quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+      announcepath =  "<%= @announce_path %>"
+      shard = <%= @shard %>
+      announcetimeout = <%= @announce_timeout %>
+    }
+    processor = "<%= @processor %>"
+    kafka {
+      topic = "<%= @topic %>"
+      brokers = "<%= scope['datastore::kafka_brokers'] %>"
+      compression = true
+      sync = true
+      batch_size = 200
+      required_acks = 1
+      max_retries = 3
+    }
+  }
+  logging {
+    log_to_file = true
+    log_to_console = false
+    log_path = "logs/"
+    default_log_level = "<%= @log_level %>"
+  }
+}

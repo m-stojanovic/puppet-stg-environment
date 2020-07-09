@@ -1,0 +1,4 @@
+zookeeper.connect: <%= scope['dsglobals::hd_zookeeper_quorum'] %>
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>

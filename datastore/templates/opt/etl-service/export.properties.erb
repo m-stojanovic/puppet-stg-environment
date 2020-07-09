@@ -1,0 +1,4 @@
+<% @settings.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+schema.registry.url=zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!/services/registry

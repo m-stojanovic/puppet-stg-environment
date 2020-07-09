@@ -1,0 +1,31 @@
+userReadApp {
+  logging {
+        log_to_file = false
+        log_to_console = true
+        log_path = "logs/"
+        default_log_level = "<%= @log_level %>"
+          }
+  userprofile {
+        service {
+                enabled = "<%= @enabled %>"
+                port = <%= @service_port %>
+                protocol = "<%= @protocol %>"
+                scheme = "<%= @scheme %>"
+                quorums = ["<%= scope['datastore::api_zookeeper_quorum'] %>"]
+                announcepath = "<%= @announce_path %>"
+                shard = <%= @shard %>
+                announcetimeout = <%= @announce_timeout %>
+                }
+        userProfileDao = "hbase"
+        userProfileDaoCaching = false
+        returnStrings = true
+        withFastTable = false
+        fasttable = "<%= @hbase_speed_table %>"
+        batchtable = "<%= @hbase_batch_table %>"
+        hbaseclient {
+            quorum = "<%= scope['datastore::hd_zookeeper_list'] %>"
+            zkclientport = "<%= scope['datastore::hd_zookeeper_clientport'] %>"
+            znodeparent = "<%= @hbase_znode %>"
+     }
+    }
+}

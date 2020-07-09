@@ -1,0 +1,4 @@
+<% @settings.each do |k,v| -%>
+<%= k %>=<%= v %>
+<% end -%>
+spring.cloud.zookeeper.connect-string=<%= scope['dsglobals::api_zookeeper_quorum'] %>

@@ -1,0 +1,4 @@
+[Service]
+Environment="ADMIN_OPTS=-admin.port=:<%= @admin_port %>"
+Environment="JAVA_OPTS=<%= @java_opts.join(' ') %>"
+LimitNOFILE=<%= @limit_nofile %>

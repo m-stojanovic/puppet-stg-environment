@@ -1,0 +1,83 @@
+// See wiki:[DataStoreService.Deployment]
+
+selectionEngine {
+    port = <%= @service_port %>
+
+    ## ZK announcement - needed for monitoring
+    scheme = "<%= scope['datastore::zk_scheme'] %>"
+    quorum  = "<%= scope['datastore::api_zookeeper_quorum'] %>"
+    announcepath = "<%= @announce_path %>"
+    shard = <%= @shard %>
+    announcetimeout = <%= @announce_timeout %>
+
+    nodeCounter = "<%= @node_counter %>"
+
+    nodeCountTimeout = <%= @node_count_timeout %>
+    countWithRdTimeout = <%= @rd_node_count_timeout %>
+    scrollTimeout = <%= @scroll_timeout %>
+    asyncSelectionTimeout = <%= @async_selection_timeout %>
+    skipRD = <%= @skip_rd %>
+    scrollPageSize = <%= @scroll_page_size %>
+    asyncSelectionParallelismMax = <%= @async_selection_max_parallelism %>
+
+    supportedUserDataTypes = <%= @supported_user_data_types %>
+
+    tenantWhitelist = <%= @tenant_whitelist %>
+
+    elasticsearch {
+        httpHosts = "<%= scope['datastore::es_http_nodes'] %>"
+        connectionTimeout = <%= @es_connection_timeout %>
+        socketTimeout = <%= @es_socket_timeout %>
+    }
+
+    relatedData {
+        rdQueryScrollSize = <%= @rd_query_scroll_size %>
+        rdQueryTimeout = <%= @rd_query_timeout %>
+        rdFixedThreadPool = <%= @rd_fixed_thread_pool %>
+        rdNumberOfElementsInChunk = <%= @rd_number_of_elements_in_chunk %>
+        rdMaxSelectionParallelism = <%= @rd_max_selection_parallelism %>
+        rdQueryTimeout = <%= @rd_query_timeout %>
+        rdNodeCalculationTimeout = <%= @rd_node_calculation_timeout %>
+        rdAwaitNodeEnabled = <%= @rd_await_node_enabled %>
+        rdChunkMaxParallelism = <%= @rd_chunk_max_parallelism %>
+    }
+
+    async {
+        expireOrderAfterMinutes = <%= @async_expire_order_after_minutes %>
+        cleanFinishedAfterHours = <%= @async_clean_finished_after_hours %>
+        cleanAllAfterDays = <%= @async_clean_all_after_days %>
+        cleanUpBulkSize = <%= @async_cleanup_bulk_size %>
+        localStorePath = "<%= @async_store_path %>"
+        storePath = "<%= @async_hdfs_store_path %>"
+        core-site.path = "file:///etc/hadoop/conf/core-site.xml"
+        hdfs-site.path = "file:///etc/hadoop/conf/hdfs-site.xml"
+        <% @quartz['schedulers'].each do |scheduler, variables| -%>
+        quartz.filename.<%= scheduler %>=<%= scheduler %>-quartz.properties
+        <% end -%>
+    }
+
+    postgres {
+        host = "<%= @postgres_host_port %>"
+        dbname = "<%= @postgres_dbname %>"
+        login = "<%= @postgres_login %>"
+        password = "<%= @postgres_password %>"
+        poolSize = <%= @postgres_pool_size %>
+        defaultTimeoutSec = <%= @postgres_default_timeout_sec %>
+        validateTimeoutSec = <%= @postgres_validate_timeout_sec %>
+        testOnBorrow = <%= @postgres_test_on_borrow %>
+        maxIdle = <%= @postgres_max_idle %>
+        maxTotal = <%= @postgres_max_total %>
+        maxWaitMillis = <%= @postgres_max_wait_millis %>
+        maxConnLifetimeMillis = <%= @postgres_max_conn_lifetime_millis %>
+        testWhileIdle = <%= @postgres_test_while_idle %>
+    }
+
+    optimizer {
+        enabled = <%= @optimizer_enabled %>
+    }
+
+    threadpool {
+       ioSize = <%= @threadpool_io_size %>
+       cpuSize = <%= @threadpool_cpu_size %>
+    }
+}

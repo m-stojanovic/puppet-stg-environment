@@ -1,0 +1,5 @@
+# Variables for hadoop mapreduce daemons. Taken out from hadoop-env.sh, 
+# because of puppet recipes being also uncoupled  
+
+export HADOOP_JOBTRACKER_OPTS="-Xmx<%= scope['hadoop::config::jobtracker_heap_mb'] %>m $HADOOP_JMX_BASE -Dcom.sun.management.jmxremote.port=8008"
+export HADOOP_TASKTRACKER_OPTS="-Xmx<%= scope['hadoop::config::tasktracker_heap_mb'] %>m $HADOOP_JMX_BASE -Dcom.sun.management.jmxremote.port=8009"

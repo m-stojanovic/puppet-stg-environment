@@ -1,0 +1,2 @@
+command[check_zookeeper]=/usr/lib/nagios/plugins/check_procs -c 1:1 -C java -a zookeeper
+command[check_zookeeper_mode]=/usr/lib/nagios/plugins/custom/check_zookeeper.sh <%= scope.lookupvar('zookeeper::zookeeper_clientport') %>

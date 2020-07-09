@@ -1,0 +1,7 @@
+port=<%= @port %>
+kafkastore.connection.url=<%= scope['confluentapp::hd_zookeeper_quorum']  %>/kafka
+kafkastore.topic=<%= @kafkastoretopic %>
+debug=false
+<% if @hname -%>
+host.name=<%= @hname %>
+<% end -%>

@@ -1,0 +1,18 @@
+  ____    _  _____  _    ____ _____ ___  ____  _____ 
+ |  _ \  / \|_   _|/ \  / ___|_   _/ _ \|  _ \| ____|
+ | | | |/ _ \ | | / _ \ \___ \ | || | | | |_) |  _|  
+ | |_| / ___ \| |/ ___ \ ___) || || |_| |  _ <| |___ 
+ |____/_/   \_\_/_/   \_\____/ |_| \___/|_| \_\_____|
+                                                     
+-------------------------------------------------------------------------------
+-------------------- This machine is maintained by Puppet! --------------------
+--------------      Unauthorized users will face Satan and friends   ----------
+-------------------------------------------------------------------------------
+Operating system: <%= @facts['os']['distro']['id'] %> - <%= @facts['os']['distro']['codename'] %> - <%= @facts['os']['distro']['release']['full'] %>
+Hostname: <%= @facts['networking']['fqdn'] %>
+Machine type: <%= @facts['virtual'] %>
+Puppet environment: <%= @facts['agent_specified_environment'] %>
+Puppet version: <%= @facts['puppetversion'] %>
+Uptime: <%= @facts['system_uptime']['uptime'] %>
+Memory: <%= @facts['memory']['system']['total'] %>
+-------------------------------------------------------------------------------

@@ -1,0 +1,15 @@
+[Unit]
+Description=Pipework for <%= @name %> service
+After=docker-<%= @name %>.service
+Requires=docker-<%= @name %>.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/sbin/pipework <%= @interface %> <%= @name %> <%= @ipaddress %>/<%= @mask %>@<%= @gateway %>
+ExecStartPre=/bin/sleep 10
+Restart=no
+RemainAfterExit=yes
+
+[Install]
+RequiredBy=docker-<%= @name %>.service

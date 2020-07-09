@@ -1,0 +1,30 @@
+---
+kafka::user: 'cp-kafka'
+kafka::group: 'confluent'
+kafka::auto_create_topics_enable: false
+kafka::heap_opts: '-Xms4G -Xmx4G'
+kafka::inter_broker_protocol_version: '2.3'
+kafka::jmx_port: 9999
+kafka::jvm_performance_opts: '-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35'
+kafka::log_dirs:
+  - '/DATA1/kafka-logs'
+  - '/DATA2/kafka-logs'
+kafka::log_flush_interval_messages: 10000
+kafka::log_flush_interval_ms: 3000
+kafka::log_message_format_version: '2.3'
+kafka::log_retention_hours: 168
+kafka::log_segment_bytes: 536870912
+kafka::log4jlogdir: '/var/log/kafka'
+kafka::nofiles_ulimit: 131072
+kafka::num_io_threads: 64
+kafka::num_network_threads: 32
+kafka::num_partitions: 40
+kafka::num_replica_fetchers: 4
+kafka::packages:
+  confluent-kafka-2.12:
+    ensure: '5.3.1-1'
+kafka::socket_receive_buffer_bytes: 1048576
+kafka::socket_send_buffer_bytes: 1048576
+kafka::zookeeper_chroot: '/kafka'
+kafka::java::packages: [ 'oracle-java8-installer', 'oracle-java8-set-default']
+kafka::java::version: '8u161-amd64-mapp'

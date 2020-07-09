@@ -1,0 +1,198 @@
+instanceName = <%= @instance_name %>
+
+//publicUrl = "https://localhost:9443/"
+
+mongodb.uri = "<%= @mongodb_uri %>"
+
+application.secret = "<%= @crypto_secret %>"
+
+zookeeperServices = [
+    {
+        id = 1
+        name = DMZ ZooKeeper
+        quorum = "<%= scope['datastore::api_zookeeper_quorum'] %>"
+        
+        finagleServices = [
+
+        <%
+            counter = 0
+        %>
+
+        <% @services.each do |s| %>
+            {
+                id = 1<%= counter+=1 %>
+                name = <%= s %>
+                zkPath = <%= scope["datastore::applications::#{s}::announce_path"]%>
+                adminPort = <%= scope["datastore::applications::#{s}::admin_port"]%>
+            }
+            <% end %>
+        ]
+    }
+    
+    {
+        id = 2
+        name = Protected ZooKeeper
+        quorum = "<%= scope['datastore::hd_zookeeper_quorum'] %>"
+        
+        kafka = {
+            id = 21
+            name = Kafka
+            zkPath = <%= @kafka_zk_path %>
+            
+            storm = {
+                id = 211
+                name = Speedlayer
+                stormUrl = "<%= @storm_url %>"
+                importantTopologies = [elasticsearch-user-1, elasticsearch-user-2, events-to-hbase, relateddata-events-to-hbase]
+            }
+        }
+        
+        finagleServices = [
+            {
+                id = 22
+                name = Schema Repository Service
+                zkPath = /services/registry
+                adminPort = 10000
+            }
+        ]
+    }
+]
+
+slaService = {
+    id = 3
+    name = Overall DataStore Performance
+    numberOfLastRuns = <%= @sla_number_of_last_runs %>
+    minimumSuccessPercentage = <%= @sla_minimum_success_percentage %>
+    maximumAverageDuration = <%= @sla_maximum_average_duration %>
+## TO DO: External property
+    resultsPaths = {
+        speedUserHbase = /monitoring/smoketestclient-speed-userprofile-results
+        speedUserEs = /monitoring/smoketestclient-speed-fastcount-results
+        speedUserresponseEs = /monitoring/smoketestclient-speed-userresponse-fastcount-results
+        speedMembershipEs = /monitoring/smoketestclient-speed-fastcount-results
+
+        batchUser = /monitoring/smoketestclient-batch-userprofile-results
+    }
+
+    hadoop = {
+        <% @hadoop_properties.each do |key, val| -%>
+            <%= key %> = "<%= val %>"
+        <% end -%>
+    }
+    cacheExpiration = 1 minute
+}
+
+client = {
+    id = 4
+    clientsZkServiceId = 1
+    kafkaServiceId = 21
+    topic = stats-collector
+    statisticMaxAge = 2 minutes
+    zkPath = /clients/services/userevent
+    maximumAverageDuration = <%= @sla_maximum_average_duration %>
+    maximumNodeBacklog = 20000
+}
+
+numberOfEventsShownForNodes = 7
+
+//uiKeys = {
+//    putUserUpdateEvent = Put user updates
+//}
+
+
+finagleServices = {
+    parameterRanges = [
+        {
+            parameter = load
+            max = 2
+        }
+        {
+            parameter = "zkGroup/health"
+            min = 0.1
+        }
+        {
+            parameter = "putGroupDeleteEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "putGroupMembershipDeleteEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "putUserAttributeDeleteEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "putUserDeleteEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "putUserReplaceEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "putUserUpdateEvent.avg"
+            max = 25
+        }
+        {
+            parameter = "request_latency_ms.avg"
+            max = 25
+        }
+        {
+            parameter = "srv/thrift/request_latency_ms.avg"
+            max = 25
+        }
+    ]
+}
+
+authentication {
+    enabled = <%= @auth_enabled %>
+
+    //keystorePassword = BigSSO
+    //privateKeyPassword = BigSSO
+    idpMetadataPath = conf/saml-idp.xml
+    
+    samlAttributeKeys {
+        username = "<%= @auth_saml_attr_username %>"
+        email = "<%= @auth_saml_attr_email %>"
+        firstName = "<%= @auth_saml_attr_firstname %>"
+        lastName = "<%= @auth_saml_attr_lastname %>"
+        displayName = "<%= @auth_saml_attr_displayname %>"
+        groups = "<%= @auth_saml_attr_groups %>"
+    }
+    
+    roles {
+        <% @auth_roles.each do |role,entity| -%>
+            <%= role %> = [
+            <% entity.each do |userOrGroup| -%>
+                "<%= userOrGroup %>"
+            <% end -%>
+            ]
+        <% end -%>
+    }
+}
+
+play.modules.enabled += "play.modules.reactivemongo.ReactiveMongoModule"
+
+mongo-async-driver {}
+
+kafkaClient-context {
+    fork-join-executor {
+        parallelism-factor = 20.0
+        parallelism-max = 200
+    }
+}
+
+zk.timeout = 2 seconds
+
+nonRealTime {
+    minimumInterval = 1 second
+    minimumSleep = 150 milliseconds
+}
+
+randomData = false
+
+logger.application = INFO
+
+//logger.org.opensaml = DEBUG
+

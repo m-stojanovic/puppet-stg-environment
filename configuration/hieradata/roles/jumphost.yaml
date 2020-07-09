@@ -1,0 +1,90 @@
+---
+collectd_plugins:
+  - collectd::plugin::python
+
+collectd::plugin::python::script_templates:
+  - 'kafka_queue_lag.py'
+collectd::plugin::python::modulepaths: [ '/usr/lib/collectd/plugins' ]
+collectd::plugin::python::interactive: false
+collectd::plugin::python::modules:
+  kafka_queue_lag:
+    script_source: '/usr/lib/collectd/custom_plugins/kafka_queue_lag.py'
+
+# Hadoop params required to maintain hadoop client role on jumphost
+hadoop::master_cluster_dfs: 'dsstg1cluster'
+hadoop::master_cluster_mr: 'dsstg1cluster_mr'
+hadoop::config::mapreduce_map_java_opts: '-Xmx2536m'
+hadoop::config::mapreduce_map_memory_mb: '4096'
+hadoop::config::mapreduce_reduce_java_opts: '-Xmx4096m'
+hadoop::config::mapreduce_reduce_memory_mb: '4096'
+hadoop::config::master_historyserver: 'os13dshdm02.muc.domeus.com'
+hadoop::config::master_jobtracker1: 'os13dshdm01.muc.domeus.com'
+hadoop::config::master_jobtracker1_alias: 'dsstg1nn1'
+hadoop::config::master_jobtracker2: 'os13dshdm02.muc.domeus.com'
+hadoop::config::master_jobtracker2_alias: 'dsstg1nn2'
+hadoop::config::master_resourcemanager: 'os13dshdm01.muc.domeus.com'
+hadoop::config::namenode_heap_mb: '8192'
+hadoop::config::yarn_app_mapreduce_am_resource_mb: '2048'
+hadoop::config::yarn_app_mapreduce_am_staging_dir: '/user/'
+hadoop::config::yarn_log_aggregation_enable: 'true'
+hadoop::config::yarn_nodemanager_remote_app_log_dir: '/var/log/hadoop-yarn/apps'
+hadoop::config::yarn_nodemanager_resource_cpu_vcores: '16'
+hadoop::config::yarn_resourcemanager_zk_state_store_parent_path: '/rmstore'
+hadoop::config::yarn_scheduler_capacity_maximum_applications: '400'
+hadoop::config::yarn_nodemanager_resource_cpu_vcores: 10
+hadoop::config::yarn_scheduler_maximum_allocation_mb: 28672
+hadoop::config::yarn_scheduler_maximum_allocation_vcores: 320
+hadoop::config::yarn_nodemanager_resource_memory_mb: 32768
+
+profiles::baseprofile::packages:
+  hue:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-beeswax:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-common:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-hbase:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-impala:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-pig:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-plugins:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-rdbms:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-search:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-security:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-server:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-spark:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-sqoop:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true
+  hue-zookeeper:
+    version: 3.9.0+cdh5.14.0+7830-1.cdh5.14.0.p0.47~jessie-cdh5.14.0
+    pin: true  
+
+reporting::reportroot: '/opt/reporting'
+# HDFS usage report
+reporting::reports::datausage::targetlocation: 'os13dsapi03:/var/www/datareport/'
+reporting::reports::datausage::schedulehours: 6
+reporting::reports::datausage::esquery: '_cat/indices?pri&v&h=index,pri.store.size&bytes=b'
+# Datastore apps dashboard
+reporting::reports::bdapps::targetlocation: 'root@os13dsapi03:/var/www/softstatus'
+reporting::reports::bdapps::scheduleminutes: '*/15'

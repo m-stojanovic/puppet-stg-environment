@@ -1,0 +1,4 @@
+spring.application.name: dsreader
+spring.cloud.zookeeper:
+    connect-string: <%= scope['datastore::api_zookeeper_quorum'] %>
+logging.file: /opt/ds-readers/log/log.log

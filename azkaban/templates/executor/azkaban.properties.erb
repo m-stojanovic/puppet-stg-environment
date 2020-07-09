@@ -1,0 +1,29 @@
+#Azkaban
+default.timezone.id=<%= scope['azkaban::timezone'] %>
+
+# Azkaban JobTypes Plugins
+azkaban.jobtype.plugin.dir=plugins/jobtypes
+
+# Loader for projects
+executor.global.properties=/opt/azkaban-exec-server/conf/global.properties
+azkaban.project.dir=/opt/azkaban-exec-server/projects
+azkaban.execution.dir=/opt/azkaban-exec-server/executions
+project.temp.dir=/opt/azkaban-exec-server/temp
+
+# plugins
+azkaban.jobtype.plugin.dir=/opt/azkaban-exec-server/plugins/jobtypes
+
+# database
+database.type=mysql
+mysql.port=<%= scope['azkaban::mysql_port'] %>
+mysql.host=<%= scope['azkaban::mysql_host'] %>
+mysql.database=<%= scope['azkaban::mysql_database'] %>
+mysql.user=<%= scope['azkaban::mysql_user'] %>
+mysql.password=<%= scope['azkaban::mysql_password'] %>
+mysql.numconnections=100
+
+# Azkaban Executor settings
+executor.maxThreads=50
+executor.port=<%= scope['azkaban::executor_port'] %>
+executor.flow.threads=30
+

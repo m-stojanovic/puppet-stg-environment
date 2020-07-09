@@ -1,0 +1,168 @@
+---
+apt::sources:
+  "debian_confluent_io":
+    location: http://image-priv.muc.domeus.com/apt/confluent/deb/5.3/
+    release: stable
+    repos: main
+    key:
+      id: 1A77041E0314E6C5A486524E670540C841468433
+      source: http://image-priv.muc.domeus.com/apt/repo-keys/confluent-io.key
+
+# Common kafka limits
+limits::entries:
+  'kafka/nofile':
+    both: 131072
+  'kafka/nproc':
+    both: 32000
+
+profiles::nrpe::checks:
+  check_apache_kafka:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_procs -u cp-kafka -c 1:1 -C java -a kafka
+  check_ethtool:
+    ensure: present
+    command: /usr/lib/nagios/plugins/check_ethtool.pl -s 1000 -i eth0
+    
+collectd::plugin::genericjmx::connection:
+  kafka:
+    host: "%{hostname}"
+    service_url: 'service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi'
+    collect: ['memory_pool','memory','garbage_collector','BrokerTopicMetrics','BrokerTopicMetrics-user','BrokerTopicMetrics-membership','BrokerTopicMetrics-userresponse','BrokerTopicMetrics-mobile','BrokerTopicMetrics-relateddata','BrokerTopicMetrics-user2']
+    instance_prefix: 'kafka-'
+collectd::plugin::genericjmx::mbean:
+  BrokerTopicMetrics:
+    object_name: kafka.server:type=BrokerTopicMetrics,*
+    instance_prefix: topic_all-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  BrokerTopicMetrics-membership:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=membership,*
+    instance_prefix: topic_membership-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  BrokerTopicMetrics-mobile:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=mobile,*
+    instance_prefix: topic_mobile-
+    instance_from: ['name']
+    values:  
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate
+        }
+  BrokerTopicMetrics-relateddata:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=relateddata,*
+    instance_prefix: topic_relateddata-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  BrokerTopicMetrics-user:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=user,*
+    instance_prefix: topic_user-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  BrokerTopicMetrics-user2:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=user2,*
+    instance_prefix: topic_user2-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  BrokerTopicMetrics-userresponse:
+    object_name: kafka.server:type=BrokerTopicMetrics,topic=userresponse,*
+    instance_prefix: topic_userresponse-
+    instance_from: ['name']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }
+  lag:
+    object_name: kafka.consumer:type=consumer-fetch-manager-metrics,*
+    instance_prefix: lag-
+    instance_from: ['client-id']
+    values:
+      - {
+          mbean_type: gauge,
+          instance_prefix: meanrate,
+          table: false,
+          attribute: MeanRate,
+        }
+      - {
+          mbean_type: gauge,
+          instance_prefix: oneminuterate,
+          table: false,
+          attribute: OneMinuteRate,
+        }

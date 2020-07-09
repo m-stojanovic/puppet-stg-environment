@@ -1,0 +1,19 @@
+[Unit]
+Description=Azkaban Executor Server
+After=network.target
+
+[Service]
+Type=simple
+User=azkaban
+Group=azkaban
+ExecStart=/opt/azkaban-exec-server/bin/start-exec.sh
+ExecStop=/opt/azkaban-exec-server/bin/shutdown-exec.sh
+TimeoutStopSec=180
+Restart=no
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=azkaban-exec-server
+
+[Install]
+WantedBy=multi-user.target
+

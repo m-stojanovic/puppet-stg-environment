@@ -1,0 +1,19 @@
+debugfile /var/log/ha-debug
+logfile /var/log/ha-log
+logfacility     daemon
+keepalive <%= @keepalive %>
+deadtime <%= @deadtime %>
+warntime <%= @warntime %>
+initdead <%= @initdead %>
+udpport <%= @udpport %>
+#bcast eth0
+<% @ipaddr.each do |k| -%>
+<% if k['certname'] != @fqdn -%>
+ucast eth0 <%= k['value'] %>
+<% end -%>
+<% end -%>
+auto_failback <%= @autofailback %>
+<% @nodes.each do |node| -%>
+node    <%= node %>
+<% end -%>
+respawn hacluster /usr/lib/heartbeat/ipfail

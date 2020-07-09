@@ -1,0 +1,83 @@
+#!/bin/bash
+link='<%= @esmasternode %>:<%= @esmasterport %>/<%= @esquery %>'
+targetlocation='<%= @targetlocation %>'
+
+date=$(date)
+
+## User snapshots
+echo "<HTML>" > usersnapshot.html
+echo "<HEAD><TITLE>User Snapshots</TITLE></HEAD>" >> usersnapshot.html
+echo "<BODY>" >> usersnapshot.html
+echo "<center><FONT SIZE=5>User Snapshots in MB $date</FONT></center>" >> usersnapshot.html
+echo "<TABLE BORDER=1 ALIGN=center CELLPADDING=10 CELLSPACING=0>" >> usersnapshot.html
+echo "<TR><TD>Client ID</TD><TD>Data Usage</TD></TR>" >> usersnapshot.html
+
+hdfs dfs -du /mds/snapshots/user/data | awk {'split($3, a, "=");if(a[2] != ""){usage=$1/1024/1024; print "<TR><TD>" a[2]  "</TD><TD>" usage "</TD></TR>"}'} >> usersnapshot.html
+
+echo "</TABLE>" >> usersnapshot.html
+echo "</BODY>" >> usersnapshot.html
+echo "</HTML>" >> usersnapshot.html
+
+
+## User response snapshots
+echo "<HTML>" > userresponsesnapshot.html
+echo "<HEAD><TITLE>User response snapshots</TITLE></HEAD>" >> userresponsesnapshot.html
+echo "<BODY>" >> userresponsesnapshot.html
+echo "<center><FONT SIZE=5>User Response snapshots in MB $date</FONT></center>" >> userresponsesnapshot.html
+echo "<TABLE BORDER=1 ALIGN=center CELLPADDING=10 CELLSPACING=0>" >> userresponsesnapshot.html
+echo "<TR><TD>Client ID</TD><TD>Data Usage</TD></TR>" >> userresponsesnapshot.html
+
+hdfs dfs -du /mds/snapshots/userresponse/data | awk {'split($3, a, "/");if(a[6] != ""){usage=$1/1024/1024; print "<TR><TD>" a[6] "</TD><TD>" usage "</TD></TR>"}'} >> userresponsesnapshot.html
+
+echo "</TABLE>" >> userresponsesnapshot.html
+echo "</BODY>" >> userresponsesnapshot.html
+echo "</HTML>" >> userresponsesnapshot.html
+
+
+## User compaction
+echo "<HTML>" > usercompaction.html
+echo "<HEAD><TITLE>User Compaction</TITLE></HEAD>" >> usercompaction.html
+echo "<BODY>" >> usercompaction.html
+echo "<center><FONT SIZE=5>User Compation in MB $date</FONT></center>" >> usercompaction.html
+echo "<TABLE BORDER=1 ALIGN=center CELLPADDING=10 CELLSPACING=0>" >> usercompaction.html
+echo "<TR><TD>Client ID</TD><TD>Data Usage</TD></TR>" >> usercompaction.html
+
+hdfs dfs -du /mds/facts/user/compaction/data | awk {'split($3, a, "=");if(a[2] != ""){usage=$1/1024/1024; print "<TR><TD>" a[2] "</TD><TD>" usage "</TD></TR>"}'} >> usercompaction.html
+
+echo "</TABLE>" >> usercompaction.html
+echo "</BODY>" >> usercompaction.html
+echo "</HTML>" >> usercompaction.html
+
+
+## Membership compaction
+echo "<HTML>" > membershipcompaction.html
+echo "<HEAD><TITLE>Membership compaction</TITLE></HEAD>" >> membershipcompaction.html
+echo "<BODY>" >> membershipcompaction.html
+echo "<center><FONT SIZE=5>Membership Compaction in MB $date</FONT></center>" >> membershipcompaction.html
+echo "<TABLE BORDER=1 ALIGN=center CELLPADDING=10 CELLSPACING=0>" >> membershipcompaction.html
+echo "<TR><TD>Client ID</TD><TD>Data Usage</TD></TR>" >> membershipcompaction.html
+
+hdfs dfs -du /mds/facts/membership/compaction/data | awk {'split($3, a, "=");if(a[2] != ""){usage=$1/1024/1024; print "<TR><TD>" a[2] "</TD><TD>" usage "</TD></TR>"}'} >> membershipcompaction.html
+
+echo "</TABLE>" >> membershipcompaction.html
+echo "</BODY>" >> membershipcompaction.html
+echo "</HTML>" >> membershipcompaction.html
+
+
+## Elastic search
+echo "<HTML>" > elasticsearch.html
+echo "<HEAD><TITLE>Elastic search</TITLE></HEAD>" >> elasticsearch.html
+echo "<BODY>" >> elasticsearch.html
+echo "<center><FONT SIZE=5>Elastic Search in MB $date</FONT></center>" >> elasticsearch.html
+echo "<TABLE BORDER=1 ALIGN=center CELLPADDING=10 CELLSPACING=0>" >> elasticsearch.html
+echo "<TR><TD>Client ID</TD><TD>Data Usage</TD></TR>" >> elasticsearch.html
+
+curl $link | awk {'split($1,a,"-");if(a[3] != ""){usage=$2/1024/1024;print "<TR><TD>" a[3] "</TD><TD>" $2 "</TD></TR>"}'} >> elasticsearch.html
+
+echo "</TABLE>" >> elasticsearch.html
+echo "</BODY>" >> elasticsearch.html
+echo "</HTML>" >> elasticsearch.html
+
+## copy report to WW server available for user
+scp *.html $targetlocation
+

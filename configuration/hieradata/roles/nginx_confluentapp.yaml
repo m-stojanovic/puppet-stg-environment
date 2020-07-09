@@ -1,0 +1,55 @@
+---
+nginx::nginx_servers:  
+  'kafka-lb-stg.muc.domeus.com':
+    listen_port: 80
+    www_root: '/var/www/html'
+    index_files:
+      - 'index.html'
+    use_default_location: false
+  'schema-lb-stg.muc.domeus.com':
+    listen_port: 80
+    www_root: '/var/www/html'
+    index_files:
+      - 'index.html'
+    use_default_location: false
+nginx::nginx_upstreams:
+  'dsapistg':
+    ensure: present
+    least_conn: true
+    members:
+      'os13dsapi02.muc.domeus.com:8182':
+        server: 'os13dsapi02.muc.domeus.com'
+        port: 8182
+      'os13dsapi03.muc.domeus.com:8182':
+        server: 'os13dsapi03.muc.domeus.com'
+        port: 8182
+        backup: true
+  'schemastg':
+    ensure: present
+    least_conn: true
+    members:
+      'os13dsapi02.muc.domeus.com:8181':
+        server: 'os13dsapi02.muc.domeus.com'
+        port: 8181
+      'os13dsapi03.muc.domeus.com:8181':
+        server: 'os13dsapi03.muc.domeus.com'
+        port: 8181
+        backup: true
+nginx::nginx_locations:
+  'kafka_lb':
+    location: '/'
+    server: 'kafka-lb-stg.muc.domeus.com'
+    proxy: 'http://dsapistg/$1'
+    rewrite_rules: 
+      - '^/(.*) /$1 break'
+    proxy_set_header: 
+      - 'Host $http_host'
+      - 'X-Public-IP 195.140.186.31'
+  'schema':
+    location: '/'
+    server: 'schema-lb-stg.muc.domeus.com'
+    proxy: 'http://schemastg/$1'
+    rewrite_rules: 
+      - '^/(.*) /$1 break'
+    proxy_set_header: 
+      - 'Host $http_host'

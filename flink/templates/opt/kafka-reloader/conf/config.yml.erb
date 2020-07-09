@@ -1,0 +1,7 @@
+kafka.datastore.servers: <%= scope['dsglobals::kafka_brokers'] %>
+kafka.datastore.zookeeper: <%= scope['dsglobals::hd_zookeeper_quorum'] %>
+ds.schema.registry.url: zk!<%= scope['dsglobals::hd_zookeeper_quorum'] %>!<%= @defaults['ds_schema_registry_path'] %>
+
+<% @variables.each do |k,v| -%>
+<%= k %>: <%= v %>
+<% end -%>

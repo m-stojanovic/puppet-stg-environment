@@ -1,0 +1,21 @@
+# Note: This file is managed by Puppet.
+
+auto.create.topics.enable=<%= @auto_create_topics_enable ? 'true' : 'false' %>
+broker.id=<%= @broker_id %>
+confluent.support.metrics.enable=false
+inter.broker.protocol.version=<%= @inter_broker_protocol_version %>
+listeners=PLAINTEXT://0.0.0.0:<%= @broker_port %>
+advertised.listeners=PLAINTEXT://<%= @fqdn %>:<%= @broker_port %>
+log.dirs=<%= Array(@log_dirs).join(',') %>
+log.flush.interval.messages=<%= @log_flush_interval_messages %>
+log.flush.interval.ms=<%= @log_flush_interval_ms %>
+log.message.format.version=<%= @log_message_format_version %>
+log.retention.hours=<%= @log_retention_hours %>
+log.segment.bytes=<%= @log_segment_bytes %>
+num.io.threads=<%= @num_io_threads %>
+num.network.threads=<%= @num_network_threads %>
+num.partitions=<%= @num_partitions %>
+num.replica.fetchers=<%= @num_replica_fetchers %>
+socket.receive.buffer.bytes=<%= @socket_receive_buffer_bytes %>
+socket.send.buffer.bytes=<%= @socket_send_buffer_bytes %>
+zookeeper.connect=<%= scope['dsglobals::hd_zookeeper_quorum'] %><%= @zookeeper_chroot if @zookeeper_chroot %>

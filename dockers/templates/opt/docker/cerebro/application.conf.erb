@@ -1,0 +1,20 @@
+secret = "ki:s:[[@=Ag?QI`W2jMwkY:eqvrJ]JqoJyi2axj3ZvOv^/KavOT4ViJSv?6YY4[N"
+basePath = "/"
+pidfile.path=/dev/null
+rest.history.size = 50 // defaults to 50 if not specified
+data.path = "./cerebro.db"
+
+es = {
+  gzip = true
+}
+
+# Authentication
+auth = {}
+
+# A list of known hosts
+hosts = [
+  {
+    host = "http://<%= @esmaster %>:<%= @esmaster_port %>"
+    name = "<%= @escluster_name %>"
+  },
+]

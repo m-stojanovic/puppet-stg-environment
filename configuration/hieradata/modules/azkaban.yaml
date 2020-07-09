@@ -1,0 +1,1314 @@
+---
+azkaban::mysql_port: 3306
+azkaban::mysql_host: localhost
+azkaban::mysql_user: azkaban
+azkaban::mysql_password: "%{alias('secrets::azkaban::mysql_password')}"
+azkaban::mysql_database: azkaban
+azkaban::mysql_root_pw: "%{alias('secrets::azkaban::mysql_root_pw')}"
+azkaban::mail_sender: 'azkaban@mp13azkaban01.dmz.cloud4.local'
+azkaban::mail_host: localhost
+azkaban::job_failure_email: devopsdatastore@mapp.com
+azkaban::job_success_email: undef
+azkaban::user: "%{hiera('common_apps_settings.azkaban.user')}"
+azkaban::password: "%{hiera('common_apps_settings.azkaban.password')}"
+azkaban::url: 'http://localhost'
+azkaban::azkaban_url: 'http://localhost:80/'
+azkaban::executor::package: 'azkaban-executor'
+azkaban::executor::version: '2.5.0-1'
+azkaban::web::package: 'azkaban-web'
+azkaban::web::version: '2.5.0-1'
+azkaban::instancename: STGScheduler
+azkaban::instancelabel: Datastore Scheduler [STG]
+azkaban::http_port: '80'
+azkaban::executor_port: '12321'
+azkaban::timezone: 'Europe/Berlin'
+azkaban::schedulefolder: '/opt/azkschedule'
+
+azkaban::config::projects:
+  es-shard-size-monitor:
+    jobs:
+      azkaban-config-es-shard-size-monitor: '0.0.7'
+    configuration:
+      es-shard-size-monitor:
+        package_name: 'es-shard-size-monitor'
+        package_version: '2.3.51-1'
+        files:
+          '/opt/azkaban-config-es-shard-size-monitor/es-shard-size-monitor.properties':
+            es.min_shard_size: 2g
+            es.max_shard_size: 25g
+            es.min_lifetime: 14
+            es.max_lifetime: 180
+            number_of_candidates: 20
+            hdfs_path: /mds/es-index-online-creator/prepared/reindexing_candidates.txt
+            store_to_hdfs: false
+            core_site.path: /etc/hadoop/conf/core-site.xml
+            hdfs_site.path: /etc/hadoop/conf/hdfs-site.xml
+  batch-userresponses:
+    jobs:
+      azkaban-config-batch-userresponses: '0.0.177'
+    configuration:
+      userresponse-conversion-statistics-compaction:
+        package_name: 'conv-statistics-compaction'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-conv-statistics-compaction/conf/statistics-compaction.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'false'
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            compaction.hbase.tablename: 'flink-statistics-conversion-0'
+            compaction.tenant.whitelist: ''
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+          '/opt/batch-userresponses-conv-statistics-compaction/conf/statistics-compaction-streaming.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'true'
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            compaction.hbase.tablename: 'flink-statistics-conversion-0'
+            compaction.tenant.whitelist: ''
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+        schedule:
+      userresponse-domain-statistics-compaction:
+        package_name: 'domain-statistics-compaction'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-domain-statistics-compaction/conf/statistics-compaction.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'false'
+            compaction.hbase.tablename: 'flink-statistics-domain-0'
+            compaction.tenant.whitelist: ''
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+            mapreduce.map.output.compress: 'true'
+            mapreduce.map.output.compress.codec: 'org.apache.hadoop.io.compress.SnappyCodec'
+          '/opt/batch-userresponses-domain-statistics-compaction/conf/statistics-compaction-streaming.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'true'
+            compaction.hbase.tablename: 'flink-statistics-domain-0'
+            compaction.tenant.whitelist: ''
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+            mapreduce.map.output.compress: 'true'
+            mapreduce.map.output.compress.codec: 'org.apache.hadoop.io.compress.SnappyCodec'
+        schedule:
+      userresponse-markers-hfile-producer:
+        package_name: 'markers-hfile-producer'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-markers-hfile-producer/conf/markers-hfile-producer.properties':
+            timezone: 'Europe/Berlin'
+            hfile.snapshotinput.path: '/mds/snapshots/userresponse/data'
+            hfile.eventinput.path: '/mds/facts/userresponse/compaction/data'
+            hfile.output.path: '/mds/snapshots/h-files/userresponse/data'
+            hfile.meta.path: '/mds/snapshots/h-files/userresponse/meta'
+            hfile.hbase.tablename: 'user-response-batch-0'
+            hfile.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            user.response.schema.id: '3'
+        schedule:
+      userresponse-hfile-producer:
+        package_name: 'userresponse-hfile-producer'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-hfile-producer/conf/hfile-producer.properties':
+            timezone: 'Europe/Berlin'
+            hfile.snapshotinput.path: '/mds/snapshots/userresponse/data'
+            hfile.output.path: '/mds/h-files/userresponse/data'
+            hfile.meta.path: '/mds/h-files/userresponse/meta'
+            hfile.hbase.tablename: 'userresponse-speed-0'
+            hfile.producer.loader: false
+            hfile.zk.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+          '/opt/azkaban-config-batch-userresponses/userresponse-hfile-producer/load-userresponse-hfiles.properties':
+            hbase.ssh.host: 'os13dshdm02.muc.domeus.com'
+            hdfs.cluster.name: 'dsstg1cluster'
+            znode.parent: '/hbase'
+            hbase.userresponse.table: 'userresponse-speed-0'
+          '/opt/azkaban-config-batch-userresponses/userresponse-hfile-producer/distcp-userresponse-hfiles.properties':
+            distcp.destination.host: 'hdfs://os13dshdm02.muc.domeus.com:54312'
+        schedule:      
+      userresponse-snapshot-creator:
+        package_name: 'snapshot-creator'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-snapshot-creator/conf/snapshot-creator.properties':
+            timezone: 'Europe/Berlin'
+            snapcreator.facts.input.path: '/mds/facts/userresponse/hourly'
+            snapcreator.output.path: '/mds/snapshots/userresponse/data'
+            snapcreator.meta.path: '/mds/snapshots/userresponse/meta'
+            parquet.compression: 'SNAPPY'
+            blacklist.tenant.ids: '5151,7590,8007,3001,6095,3565,6094,7121,5531,17500,2504,8501,12235,13000,14001,15000,16000,17000,18001,19000,20000,16819,22000,552,9061'
+            parquet.compression: 'SNAPPY'
+            snapcreator.reducers.number: 40
+            mapreduce.map.memory.mb: 2560
+            snapcreator.snapshots.input.path: '/mds/snapshots/userresponse/data'
+            snapshot.time.lower.by.hours: 0
+            snapcreator.output.path: '/mds/snapshots/userresponse/data'
+            timezone: 'Europe/Berlin'
+            snapcreator.meta.path: '/mds/snapshots/userresponse/meta'
+            mapreduce.reduce.memory.mb: 8192
+            snapcreator.facts.input.path: '/mds/facts/userresponse/hourly'
+            max.historical.hours: 96
+        schedule: '15m'
+      userresponse-statistics-aggregator:
+        package_name: 'statistics-aggregator'
+        package_version: '0.2.22-1'
+        files:
+          '/opt/batch-userresponses-statistics-aggregator/conf/statistics-aggregator.properties':
+            timezone: 'Europe/Berlin'
+            userstats.snapshot.time.start: '2020010100'
+            userstats.snapshot.time.end: '2020021200'
+            userstats.snapshot.timezone: 'Europe/Berlin'
+            aggregator.input.path: '/mds/snapshots/statistics/data'
+            aggregator.input.meta.path: '/mds/snapshots/statistics/meta'
+            aggregator.output.hfile.path: '/mds/snapshots/statistics-hfiles/data'
+            aggregator.output.old.path: '/mds/snapshots/statistics-old-messages'
+            aggregator.meta.path: '/mds/snapshots/statistics-hfiles/meta'
+            aggregator.hbase.tablename: 'flink-statistics-counters-0'
+            aggregator.hbase.domain.tablename: 'flink-statistics-domain-0'
+            aggregator.hbase.conversion.tablename: 'flink-statistics-conversion-0'
+            whitelist.tenant.ids: '14005,14006'
+            blacklist.tenant.ids: '5151,7590,8007,3001,6095,3565,6094,7121,5531,17500,2504,8501,12235,13000,14001,15000,16000,17000,18001,19000,20000,16819,22000,552,9061'
+            aggregator.reducers.number: 100
+            aggregator.message.timeout.days: 30
+            snapshot.time.lower.by.hours: 1
+            user.statistics.schema.id: 4
+            aggregator.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+        schedule:
+      userresponse-statistics-cleaner:
+        package_name: 'statistics-cleaner'
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-statistics-cleaner/conf/statistics-cleaner.properties':
+            timezone: 'Europe/Berlin'
+            cleaner.input.path: '/mds/snapshots/statistics/data'
+            cleaner.meta.path: '/mds/snapshots/cleaner/meta'
+            cleaner.message.timeout.days: 31
+        schedule:
+      userresponse-statistics-compaction:
+        package_name: 'statistics-compaction' 
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-statistics-compaction/conf/statistics-compaction.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'false'
+            compaction.hbase.tablename: 'flink-statistics-counters-0'
+            compaction.tenant.whitelist: ''
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+            mapreduce.map.output.compress: 'true'
+            mapreduce.map.output.compress.codec: 'org.apache.hadoop.io.compress.SnappyCodec'
+          '/opt/batch-userresponses-statistics-compaction/conf/statistics-compaction-streaming.properties':
+            timezone: 'Europe/Berlin'
+            compaction.reducers.number: '100'
+            compaction.streaming: 'true'
+            compaction.hbase.tablename: 'flink-statistics-counters-0'
+            compaction.tenant.whitelist: ''
+            compaction.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            mapreduce.task.timeout: 1800000
+            mapreduce.map.memory.mb: ''
+            mapreduce.reduce.memory.mb: '8192'
+            mapreduce.map.output.compress: 'true'
+            mapreduce.map.output.compress.codec: 'org.apache.hadoop.io.compress.SnappyCodec'
+            mapreduce.map.java.opts: '-Xmx3840m'
+        schedule:
+      userresponse-user-statistics-v2:
+        package_name: 'user-statistics-v2' 
+        package_version: '0.2.22-1'
+        files:
+          '/opt/azkaban-config-batch-userresponses/load-statistics-hfiles.properties':
+            hbase.ssh.host: 'os13dshdm02'
+            hdfs.master.host.1: 'os13dshdm01'
+            hdfs.master.host.2: 'os13dshdm01'
+            hdfs.master.port: '54312'
+          '/opt/batch-userresponses-user-statistics-v2/conf/user-statistics-v2.properties':
+            timezone: 'Europe/Berlin'
+            userstats.snapshot.time.start: '2020010100'
+            userstats.snapshot.time.end: '2020021200'
+            userstats.snapshot.path: '/mds/snapshots/userresponse/data'
+            userstats.output.path: '/mds/snapshots/statistics/data'
+            userstats.meta.path: '/mds/snapshots/statistics/meta'
+            userstats.userresponse.history.days: 90
+            userstats.userresponse.max.daily: 100
+            userstats.userresponse.max.message: 1000
+            userstats.tenants.processing.chunk.size: 5
+            user.response.schema.id: 11
+            message.user.statistics.schema.id: 4
+            mapreduce.task.timeout: 1800000
+            whitelist.tenant.ids: '14005,14006'
+            blacklist.tenant.ids: '5151,7590,8007,3001,6095,3565,6094,7121,5531,17500,2504,8501,12235,13000,14001,15000,16000,17000,18001,19000,20000,16819,22000,552,9061'
+            user.blacklist: '14010-14239272102'
+            userstats.reducers.number: 100
+            userstats.statsinput.path: '/mds/snapshots/statistics/data'
+            userstats.userresponse.conversion.assignment.enabled: 'false'
+            userstats.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+          '/opt/batch-userresponses-user-statistics-v2/conf/conversion-assigner.properties':
+            timezone: 'Europe/Berlin'
+            userstats.snapshot.time.start: '2019071000'
+            userstats.snapshot.time.end: '2019073000'
+            userstats.snapshot.path: '/mds/snapshots/userresponse/data'
+            userstats.output.path: '/mds/snapshots/statistics/data'
+            userstats.meta.path: '/mds/snapshots/statistics/meta'
+            userstats.userresponse.history.days: 90
+            userstats.userresponse.max.daily: 100
+            userstats.userresponse.max.message: 0
+            user.response.schema.id: 13
+            message.user.statistics.schema.id: 4
+            mapreduce.task.timeout: 1800000
+            whitelist.tenant.ids: '99907'
+            blacklist.tenant.ids: ''
+            userstats.statsinput.path: '/mds/snapshots/statistics/data'
+            userstats.userresponse.conversion.assignment.enabled: 'true'
+            userstats.userresponse.conversion.assignment.strategy: 'linkclick'
+            userstats.userresponse.conversion.assignment.remove.existing: 'false'
+            userstats.userresponse.conversion.assignment.output.prefix: 'ac'
+            userstats.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+
+        schedule:
+      userresponse-expired-responses-loader:
+        package_name: 'expired-responses-loader' 
+        package_version: '0.2.30-1'
+        files:
+          '/opt/batch-userresponses-expired-responses-loader/conf/expired-responses-loader.properties':
+            timezone: 'Europe/Berlin'
+            expired.responses.producer.responses.rootPath: '/tmp/userresponse-failed/userresponse'
+            expired.responses.producer.responses.schemaId: 13
+            expired.responses.producer.responses.deleteProcessedBuckets: 'false'
+            expired.responses.producer.tenant.whitelist: ''
+            expired.responses.producer.tenant.blacklist: ''
+            expired.responses.producer.kafka.type: 'remote'
+            expired.responses.producer.kafka.topic: 'stats-recovery'
+            schema.registry.type: 'remote'
+            hadoop.username: 'flink_hbase-statistics'
+        schedule:
+  sla-check-eventengine:
+    jobs:
+      azkaban-config-sla-check-eventengine: '0.0.26'
+    configuration:
+      sla-event-engine:
+        package_name: 'sla-event-engine'
+        package_version: '0.0.24'
+        files:
+          '/opt/sla-event-engine/conf/application.properties':
+            activateSchedulerSLACheck: 'false'
+            redisUrl: 'event-engine-stg-lb.muc.domeus.com'
+            redisPort: '6380'
+            kafkaUrl: 'http://os13dsapi02.muc.domeus.com:8182'
+            schemaRegistryUrl: 'http://os13dsapi02.muc.domeus.com:8181'
+            kafkaTopic: 'ee-events'
+            selectorAppSpecificId: '88888'
+            actionsReader.kafkaUrl: 'http://os13dsapi02.muc.domeus.com:8182'
+            actionsReader.topic: 'ee-azkaban-actions'
+            actionsReader.schemaRegistryUrl: 'http://os13dsapi02.muc.domeus.com:8181'
+            kafkaRestProxyActionsEndpoint: 'http://os13dsapi02.muc.domeus.com:8182/topics/ee-actions'
+            kafkaRestProxyEventsEndpoint: 'http://os13dsapi02.muc.domeus.com:8182/topics/ee-events'
+            schemaRegistryEndpoint: 'http://os13dsapi02.muc.domeus.com:8181/subjects'
+            activateNagiosCheck: 'false'
+            nagiosHost: 'monitor03.muc.domeus.com'
+            nagiosPort: '5667'
+            serviceNameSendingCheck: 'event_engine_stg'
+            schedulingServiceEndpoint: ''
+            schedulingServiceMasterBoxHealthCheckEndpoint: ''
+            schedulingServiceSecondBoxHealthCheckEndpoint: ''
+            redisMaxConnections : '20'
+            redisMaxWaitMilis : '1000'
+            redisTimeout : '5000'
+            redisBlockWhenPoolExhausted : 'true'
+            expirationSecondsForRedisKey : 600
+            eventFactName : 'azkabanName'
+            eventFactValue : 'AzkabanSLACheck'
+            conditionFieldName : 'azkabanName'
+            conditionFieldValue : 'AzkabanSLACheck'
+            actionTimeAfterXMinutes : '1'
+            actionName : 'SLACheckAction'
+            selectorAppId : 'AZKABAN'
+            ruleSelector : 'SlaCheck'
+            actionsReader.group : 'azkaban-group9999'
+            actionsReader.waitXSecondsAfterEveryKafkaReadRequest : '2'
+            actionsReader.waitXSecondsForActionsFromKafkaReader : '180'
+            serviceHostnameSendingCheck : 'microservices'
+            nagiosEncryption : 'NONE'
+            checkIfSchedulerSendBackPayloadsAfterXSeconds : '10'
+        schedule: '15m'
+  batch-user:
+    jobs:
+      azkaban-config-batch-user: '0.1.245'
+    configuration:
+      hfiles-from-user-facts:
+        package_name: 'batch-user-hfile-producer'
+        package_version: '2.3.54-1'
+        files:
+          '/opt/batch-user-hfile-producer/conf/hfile-producer.properties':
+            hfile.eventinput.path: '/mds/facts/user/compaction/data'
+            hfile.output.path: '/mds/h-files/user/data'
+            hfile.meta.path: '/mds/h-files/user/meta'
+            hfile.producer.loader: false
+            snapcreator.meta.path: '/mds/snapshots/user/meta'
+            whitelist.tenant.ids:
+            blacklist.tenant.ids:
+            tenants.blacklist.path.enabled: true
+            tenants.blacklist.path: '/mds/tenant_blacklist.conf'
+            hfile.zk.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            hfile.hbase.tablename: 'user-profile-batch-0'
+            timezone: 'Europe/Berlin'
+            snapshot.time.lower.by.hours: 0
+          '/opt/azkaban-config-batch-user/hfiles-from-user-facts/load-user-hfiles.properties':
+            hbase.ssh.host: 'os13dshdm02.muc.domeus.com'
+            hdfs.cluster.name: 'dsstg1cluster'
+            znode.parent: '/hbase'
+            hbase.user.table.batch: 'user-profile-batch-0'
+          '/opt/azkaban-config-batch-user/hfiles-from-user-facts/distcp-user-hfiles.properties':
+            distcp.destination.host: 'hdfs://os13dshdm02.muc.domeus.com:54312'
+      user-snapshot-maintenance:
+        package_name: 'batch-user-snapshot-maintenance'
+        package_version: '2.3.54-1'
+        files:
+          '/opt/batch-user-snapshot-maintenance/conf/snapshot-maintenance.properties':
+            timezone: 'Europe/Berlin'
+            snapshot.path: '/mds/snapshots/user/data'
+            snapshot.backup.path: '/mds/backup/snapshots/user/data'
+            num.snapshots.to.retain: 5
+            snapshot.maintainer.parallelism: 10
+  batch:
+    jobs:
+      azkaban-config-batch: '1.0.378'
+    configuration:
+      batch-compaction:
+        package_name: 'batch-compaction'
+        package_version: '2.2.16-1'
+        files:
+          '/opt/batch-compaction/conf/compaction-dmpresponse.properties':
+            compaction.facts.input.path: '/mds/facts/dmpresponse/hourly'
+            topic.name: 'dmpresponse'
+            compaction.output.path: '/mds/facts/dmpresponse/compaction/data'
+            compaction.meta.path: '/mds/facts/dmpresponse/compaction/meta'
+            max.historical.hours: 168
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-group.properties':
+            compaction.facts.input.path: '/mds/facts/group/hourly'
+            topic.name: 'group'
+            compaction.output.path: '/mds/facts/group/compaction/data'
+            compaction.meta.path: '/mds/facts/group/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-membership.properties':
+            compaction.facts.input.path: '/mds/facts/membership/hourly'
+            topic.name: 'membership'
+            compaction.output.path: '/mds/facts/membership/compaction/data'
+            compaction.meta.path: '/mds/facts/membership/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-mobileresponse.properties':
+            compaction.facts.input.path: '/mds/facts/mobileresponse/hourly'
+            topic.name: 'mobileresponse'
+            compaction.output.path: '/mds/facts/mobileresponse/compaction/data'
+            compaction.meta.path: '/mds/facts/mobileresponse/compaction/meta'
+            max.historical.hours: 168
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+            fail.without.input: 'false'
+          '/opt/batch-compaction/conf/compaction-relateddata.properties':
+            compaction.facts.input.path: '/mds/facts/relateddata/hourly'
+            topic.name: 'relateddata'
+            compaction.output.path: '/mds/facts/relateddata/compaction/data'
+            compaction.meta.path: '/mds/facts/relateddata/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-user.properties':
+            compaction.facts.input.path: '/mds/facts/user/hourly'
+            topic.name: 'user'
+            compaction.output.path: '/mds/facts/user/compaction/data'
+            compaction.meta.path: '/mds/facts/user/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-userresponse.properties':
+            compaction.facts.input.path: '/mds/facts/userresponse/hourly'
+            topic.name: userresponse'
+            compaction.output.path: '/mds/facts/userresponse/compaction/data'
+            compaction.meta.path: '/mds/facts/userresponse/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-mobile.properties':
+            compaction.facts.input.path: '/mds/facts/mobile/hourly'
+            topic.name: mobile
+            compaction.output.path: '/mds/facts/mobile/compaction/data'
+            compaction.meta.path: '/mds/facts/mobile/compaction/meta'
+            max.historical.hours: 72
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-usagestats.properties':
+            compaction.facts.input.path: '/mds/facts/usagestats/hourly'
+            topic.name: 'usagestats'
+            compaction.output.path: '/mds/facts/usagestats/compaction/data'
+            compaction.meta.path: '/mds/facts/usagestats/compaction/meta'
+            max.historical.hours: 168
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+          '/opt/batch-compaction/conf/compaction-dsattributes.properties':
+            compaction.facts.input.path: '/mds/facts/dsattributes/hourly'
+            topic.name: 'dsattributes'
+            compaction.output.path: '/mds/facts/dsattributes/compaction/data'
+            compaction.meta.path: '/mds/facts/dsattributes/compaction/meta'
+            max.historical.hours: 168
+            compaction.reducers: 10
+            compaction.tenant.fieldname: 'tenantId'
+            parquet.compression: 'SNAPPY'
+            timezone: 'Europe/Berlin'
+      camus:
+        package_name: 'camus-etl-kafka'
+        package_version: '0.13.0-SNAPSHOT'
+        files:
+          '/opt/camus-etl-kafka/conf/camus.properties':
+            etl.destination.path: '/mds/facts'
+            etl.execution.base.path: '/mds/facts/meta'
+            etl.execution.history.path: '/mds/facts/meta/output'
+            zookeeper.broker.topics: '/kafka/brokers/topics'
+            zookeeper.broker.nodes: '/kafka/brokers/ids'
+            hdfs.default.classpath.dir: '/lib'
+            mapred.map.tasks: 40
+            kafka.max.pull.hrs: '-1'
+            kafka.max.historical.days: '-1'
+            kafka.max.pull.minutes.per.task: '-1'
+            camus.message.decoder.class: 'com.linkedin.camus.etl.kafka.coders.KafkaAvroMessageDecoder'
+            kafka.message.coder.schema.registry.class: 'com.teradata.datastore.schema.registry.client.RestSchemaRegistry'
+            kafka.client.name: 'camus'
+            etl.record.writer.provider.class: 'com.linkedin.camus.etl.kafka.common.ParquetRecordWriterProvider'
+            etl.default.timezone: 'Europe/Berlin'
+            parquet.compression: 'SNAPPY'
+            etl.partitioner.class: 'com.teradata.datastore.camus.coders.FixedTimePartitioner'
+            kafka.whitelist.topics: 'userresponse,user,membership,group,relateddata,mobileresponse,mobile,dmpresponse,dsattributes'
+      batch-snapshot-sweeper-sweep:
+        package_name: 'batch-snapshot-sweeper-sweep'
+        package_version: '2.2.16-1'
+        files:
+          '/opt/batch-snapshot-sweeper-sweep/conf/snapshot-sweeper-sweep.properties':
+            sweeper.rootPath: '/mds/snapshots/userresponse/data'
+            sweeper.tenant.whitelist: ''
+            sweeper.tenant.blacklist: ''
+            sweeper.sweep.compact.force.delete.enabled: 'false'
+            sweeper.sweep.etl-server.reporting: 'false'
+            etlserver.url.progress: ''
+            etlserver.url.accumulators: ''
+      batch-snapshot-sweeper:
+        package_name: 'batch-snapshot-sweeper'
+        package_version: '2.2.11-1'
+        files:
+          '/opt/batch-snapshot-sweeper/conf/conversion-sweeper-userresponse-daily.properties':
+            sweeper.type: 'daily'
+            sweeper.offset: 1
+            sweeper.rootPath: '/mds/snapshots/userresponse/data'
+            sweeper.schema: 'userresponse'
+            sweeper.schema.registryUrl:
+            sweeper.executor: ''
+            snapshot.filename.prefix: ''
+          '/opt/batch-snapshot-sweeper/conf/conversion-sweeper-userresponse-monthly.properties': 
+            sweeper.type: 'monthly'
+            sweeper.offset: 1
+            sweeper.rootPath: '/mds/snapshots/userresponse/data'
+            sweeper.schema: 'userresponse'
+            sweeper.schema.registryUrl: 
+            sweeper.executor:
+            snapshot.filename.prefix: 'conversion'
+            sweeper.executor.parallel.parallelism:
+          '/opt/batch-snapshot-sweeper/conf/snapshot-sweeper-mobileresponse-daily.properties':
+            sweeper.type: 'daily'
+            sweeper.offset: '1'
+            sweeper.rootPath: '/mds/snapshots/mobileresponse/data'
+            sweeper.schema: 'mobile_response_snapshot'
+            sweeper.schema.registryUrl:
+            sweeper.executor:
+          '/opt/batch-snapshot-sweeper/conf/snapshot-sweeper-mobileresponse-monthly.properties':
+            sweeper.type: 'monthly'
+            sweeper.offset: 1
+            sweeper.rootPath: '/mds/snapshots/mobileresponse/data'
+            sweeper.schema: 'mobile_response_snapshot'
+            sweeper.schema.registryUrl:
+            sweeper.executor:
+            sweeper.executor.parallel.parallelism:
+          '/opt/batch-snapshot-sweeper/conf/snapshot-sweeper-userresponse-daily.properties':
+            sweeper.type: 'daily'
+            sweeper.offset: 1
+            sweeper.rootPath: '/mds/snapshots/userresponse/data'
+            sweeper.schema: 'userresponse'
+            sweeper.executor: 'parallel'
+            sweeper.executor.parallel.parallelism: 20
+          '/opt/batch-snapshot-sweeper/conf/snapshot-sweeper-userresponse-monthly.properties':
+            sweeper.type: 'monthly'
+            sweeper.offset: 1
+            sweeper.rootPath: '/mds/snapshots/userresponse/data'
+            sweeper.schema: 'userresponse'
+            sweeper.executor: 'parallel'
+            sweeper.executor.parallel.parallelism: 20
+      batch-tenant-deleter:
+        package_name: 'batch-tenant-deleter'
+        package_version: '2.2.16-1'
+        files:
+          '/opt/batch-tenant-deleter/conf/tenant-deleter.properties':
+            whitelist.tenant.ids: '16747'
+            tenant.deleter.meta.path: '/mds/snapshots/tenant-deleter/meta'
+            tenant.deleter.blacklist.hdfs.path: '/mds/tenant_blacklist.conf'
+            tenant.deleter.whitelist.hdfs.path: '/mds/snapshots/whitelist.conf'
+            tenant.deleter.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+
+            
+  #                                   !!! WARNING !!!
+  # Below job is directly depended on binaries defined on another hosts / other modules e.g.:
+  # - start-new-customers-es-speedlayer - requires flink installed on remote flink host (see common.properties file below) with speedlayer-flink-user-elastic application
+  # - start-watcher - requires azkaban::tools::speedoffsetwatcher on localhost
+  # - start-es-speedlayer - requires requires flink installed on remote flink host (see common.properties file below) with with speedlayer-flink-user-elastic application
+  # - start-offset-merger - requires azkaban::tools::speedoffsetloader on localhost
+  es-index-online-creator-new-customer:
+    jobs:
+      azkaban-config-es-index-online-creator-new-customer: '0.0.362'
+    configuration:
+      azkaban-config-es-index-online-creator-new-customer:
+        files:
+          '/opt/azkaban-config-es-index-online-creator-new-customer/common.properties':
+            newCustomersShards: '14006-40,16670-80,21225-16,7196-12,18009-16,16658-24,7136-12,16315-12,14006-80,5837-16'
+            flinkHost: 'os13dshdm02.muc.domeus.com'
+            flinkSnapshotHost: 'os13dshdm01.muc.domeus.com'
+            es.master_node: 'os13dses01-es1.muc.domeus.com:9200'
+            flinkSnapshotUser: 'snapshots'
+            flinkUser: 'flink_elasticsearch-user'
+            whitelistPath: '/mds/snapshots/whitelist.conf'
+            blacklistPath: '/mds/tenant_blacklist.conf'
+            snapshotFinishTimePath: '/mds/snapshots/user/meta/add_customers.seq'
+            hdfsLockFile: '/mds/es-index-online-creator/run/lock'
+            hdfsCurrentDir: '/mds/es-index-online-creator/current'
+            hdfsPreparedDir: '/mds/es-index-online-creator/prepared'
+            hdfsSkippedDir: '/mds/es-index-online-creator/skipped'
+            hdfsDoneDir: '/mds/es-index-online-creator/done'
+            flinkInstances: 'prime,bigtenants'
+            secondsToWaitAfterSpeedlayerKill: 15
+          '/opt/azkaban-config-es-index-online-creator-new-customer/user-snapshot-timestamp.properties':
+            invokeFromUser: 'snapshots'
+          '/opt/azkaban-config-es-index-online-creator-new-customer/user-snapshot-creator.properties':
+            etlServerHost: 'os13dsapi01.muc.domeus.com'
+            etlServerPort: 8079
+            sleepTime: 30
+          '/opt/azkaban-config-es-index-online-creator-new-customer/run-yarn-queue.properties':
+            capacity.queue.name: 'elastic'
+            capacity.user.name: 'snapshots'
+      es-mapping:
+        package_name: 'batch-user-es-mapping'                               
+        package_version: '2.3.54-1'
+        files:
+          '/opt/batch-user-es-mapping/conf/es-mapping.properties':
+            snapcreator.meta.path: '/mds/snapshots/user/meta'
+            es.index.delete.batch.size: 10
+            es.index.nestedobjects.limit: 100000
+            es.reducers.number: 10
+            es.mapping.timeout: 120
+            mapreduce.task.timeout: 1800000
+            es.translog.flush_threshold_size: '512mb'
+            whitelist.tenant.ids:
+            tenants.blacklist.path.enabled: true
+            tenants.blacklist.path: '/mds/tenant_blacklist.conf'
+            customtenant.shards:
+            timezone: 'Europe/Berlin'
+            shards.sizefactor: 4
+            userresponse.snapshotinput.path: '/mds/snapshots/userresponse/data'
+            snapcreator.snapshotinput.path: '/mds/snapshots/user/data'
+            es.index.sizeEnabled: true
+            es.index.codec: 'best_compression'
+            es.index.max_shard_size_in_gb: 15
+            es.index.shards_level: '4,8,12,24,36,48,60,80'
+            index.routing.include.key: disk_type
+            index.routing.include.value: ssd
+            index.routing.exclude.key: disk_type
+            index.routing.exclude.value: kubernetes
+            es.client.sockettimeout: 120000
+            es.client.connectiontimeout: 30000
+      es-index-online-creator:
+        package_name: 'batch-user-es-index-online-creator'
+        package_version: '2.3.53-1'
+        files:
+          '/opt/batch-user-es-index-online-creator/conf/es-index-online-creator.properties':
+            snapcreator.snapshotinput.path: '/mds/snapshots/user/data'
+            snapcreator.meta.path: '/mds/snapshots/user/meta'
+            indexcreator.userresponse.input.path: '/mds/snapshots/userresponse/data'
+            indexcreator.reducers.number: 100
+            es.batch.size.bytes: 5242880
+            es.batch.size.entries: 5000
+            es.batch.size.entries.userresponse: 5000
+            es.batch.write.refresh: false
+            es.index.auto.create: 'yes'
+            es.http.timeout: '2m'
+            es.http.retries: 3
+            es.batch.write.retry.count: 5
+            es.batch.write.retry.wait: 10
+            es.action.heart.beat.lead: '15s'
+            whitelist.tenant.ids: '__UNSET__'
+            indexcreator.userresponse.input.days: 365
+            mapreduce.job.split.metainfo.maxsize: -1
+            blacklist.tenant.ids:
+            tenants.blacklist.path.enabled: true
+            tenants.blacklist.path: '/mds/tenant_blacklist.conf'
+            user.response.limit: 100
+            timezone: 'Europe/Berlin'
+            user.response.schema.topic: 'userresponse'
+            user.profile.schema.topic: 'userprofile'
+            mapreduce.map.memory.mb: 3560
+            mapreduce.reduce.memory.mb: 10240
+            mapreduce.reduce.java.opts: -Xmx8g
+            yarn.app.mapreduce.am.resource.mb: 5120
+            yarn.app.mapreduce.am.command-opts: '-Xmx4g'
+            indexcreator.preparedmessage.enabled: true
+            indexcreator.preparedmessage.input.path: '/user/message/mapping'
+            indexcreator.dmpresponse.enabled: true
+            indexcreator.dmpresponse.input.days: 365
+            dmp.response.schema.topic: 'dmpresponse'
+            indexcreator.dmpresponse.input.path: '/mds/facts/dmpresponse/compaction/data'
+            es.batch.size.entries.dmpresponse: 5000
+            indexcreator.mobileresponse.enabled: true
+            indexcreator.mobileresponse.input.days: 365
+            mobile.response.schema.topic: 'mobileresponse'
+            indexcreator.mobileresponse.input.path: '/mds/facts/mobileresponse/compaction/data'
+            es.batch.size.entries.mobileresponse: 5000
+      es-index-swapper:
+        package_name: 'batch-user-es-index-swapper'
+        package_version: '2.3.54-1'
+        files:
+          '/opt/batch-user-es-index-swapper/conf/es-index-swapper.properties':
+            user.index.swapper.aliaschanger.timeout.seconds: 120
+            user.index.swapper.batch.delete.timeout.seconds: 120
+            user.index.swapper.batch.delete.size: 10
+  batch-relateddata:
+    jobs:
+      azkaban-config-batch-relateddata: '0.0.93'
+    configuration:
+      azkaban-config-batch-relateddata:
+        files:
+          '/opt/azkaban-config-batch-relateddata/hfile-producer/common.properties':
+            snapshotFinishTimePath: '/mds/snapshots/relateddata/meta/add_customers.seq'
+            whitelistPath: '/mds/snapshots/rd_whitelist.conf'
+            blacklistPath: '/mds/tenant_blacklist.conf'
+            capacity.user.name: 'snapshots'
+            capacity.queue.name: 'snapshots'
+            tenantIds: '7681'
+            flinkHost: 'os13dshdm01.muc.domeus.com'
+            flinkUser: 'flink_relateddata'
+            flinkInstances: 'hbase,hbase-locking'
+            distcp.destination.host: 'hdfs://os13dshdm02.muc.domeus.com:54312'
+            hdfs.cluster.name: 'dsstg1cluster'
+            hbase.ssh.host: 'os13dshdm02.muc.domeus.com'
+            znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            hbase.rd.table.batch: 'relateddata-speed-0'
+      relateddata-hfile-producer:
+        package_name: 'batch-rd-hfile-producer'
+        package_version: '0.0.62-1'
+        files:
+          '/opt/batch-rd-hfile-producer/conf/rd-hfile-producer.properties':
+            snapcreator.meta.path: '/mds/snapshots/relateddata/meta'
+            hfile.snapshotinput.path: '/mds/snapshots/relateddata/data'
+            hfile.output.path: '/mds/h-files/relateddata/data'
+            hfile.meta.path: '/mds/h-files/relateddata/meta'
+            hfile.zk.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            hfile.hbase.tablename: 'relateddata-speed-0'
+            timezone: 'Europe/Berlin'
+            hfile.meta_tmp.path: '/mds/h-files/relateddata/meta/tmp/'
+            hfile.producer.loader.enabled: false
+      relateddata-snapshot-creator:
+        package_name: 'batch-rd-snapshot-creator'
+        package_version: '0.0.62-1'
+        files:
+          '/opt/batch-rd-snapshot-creator/conf/rd-snapshot-creator.properties':
+            snapcreator.facts.input.path: '/mds/facts/relateddata/compaction/data'
+            snapcreator.snapshots.input.path: '/mds/snapshots/relateddata/data'
+            snapcreator.output.path: '/mds/snapshots/relateddata/data'
+            snapcreator.meta.path: '/mds/snapshots/relateddata/meta'
+            snapcreator.reducers.number: 30
+            timezone: 'Europe/Berlin'
+            whitelist.tenant.ids: '7646,7662,15495,7694,5844,7710,15464,16782,5853,5856,5876,7681'
+            snapshot.input.empty.success: true
+      t0-snapshot-creator:
+        package_name: 'batch-rd-t0-snapshot-creator'
+        package_version: '0.0.62-1'
+        files:
+          '/opt/batch-rd-t0-snapshot-creator/conf/t0-snapshot-creator.properties':
+            hfile.zk.znode.parent:  "%{hiera('common_apps_settings.hbase.znode')}"
+            hbase.source.tablename: 'relateddata'
+            snapcreator.meta.path: '/mds/snapshots/relateddata/t0/meta'
+            snapcreator.data.path: '/mds/snapshots/relateddata/t0/data'
+            moveto.outputdir.enabled: true
+            missing.metadata.fail: true
+            cep.client.eu.api.key: '5qs3ihc91hwpz82acvi21gt1dfc5dgw9'
+            cep.client.us.api.key: '5qs3ihc91hwpz82acvi21gt1dfc5dgw9'
+            cep.client.eu.base.url: 'cook.shortest-route.com'
+            cep.client.us.base.url: 'aldrin.shortest-route.com'
+            cep.client.endpoint: '/services/dmc/relateddata/all'
+            cep.client.use.https: true
+            cep.client.sysnames: >-
+              7646:janekoenig,7662:naimagroup,15495:dertl,7694:ocs,5844:lelynx,7710:riverford,
+              15464:russellandbromley,16782:lncc,5853:rapid_electronics,5856:moneyguru,
+              5876:news_clarks,7681:demo-presales,14035:admiralenvios,14045:ticketveiling,14062:wonderbox_fr,
+              15139:pm_team_uk,15399:thelevelgroup,15417:kenscio-demo,15518:central_support,16034:headhonchos_in,
+              16055:euronics,16063:paragon,16115:boerse_stuttgart,16255:intersport_haendler,16450:coop_italia,
+              16486:dmail,16533:coop_online,16584:geox,16631:obi,16816:condor_flugdienst,17591:ebayannunci,19007:cg,
+              19128:solutions_sandbox,19138:wanimo,19165:bawag_psk,19180:unieuro,21000:mediaset_infinity,
+              21067:lmn,21211:collistar,3597:demo-fr,42000:metrics44,5571:4care,5858:monevo,5859:credit_angel,
+              5860:credit_perfect,5881:michela-it,5896:petspyjamas,5898:santoni,7714:boxeurdesrues,9703:swarovski_daniel,
+              30000:dmctest
+            timezone: 'Europe/Berlin'
+  batch-usagestats:
+    jobs:
+      azkaban-config-batch-usagestats: '0.1.4'
+    configuration:
+      batch-usagestats-hfile-producer:
+        package_name: 'batch-usagestats-hfile-producer' 
+        package_version: '0.0.8-1'
+        files:
+          '/opt/batch-usagestats-hfile-producer/conf/batch-usagestats-hfile-producer.properties':
+            hfile.zookeeper.znode.parent: "%{hiera('common_apps_settings.hbase.znode')}"
+            hfile.snapshotinput.path: '/mds/snapshots/usagestats/data'
+            hfile.output.path: '/mds/hfiles/usagestats/data'
+            hfile.meta.path: '/mds/hfiles/usagestats/meta'
+            hfile.hbase.tablename: 'usagestats-counters-0'
+            whitelist.tenant.ids: ''
+            timezone: 'Europe/Berlin'
+            mapred.reduce.tasks: 10
+      batch-usagestats-snapshot-creator:
+        package_name: 'batch-usagestats-snapshot-creator' 
+        package_version: '0.0.8-1'
+        files:
+          '/opt/batch-usagestats-snapshot-creator/conf/batch-usagestats-snapshot-creator.properties':
+            snapcreator.facts.input.path: '/mds/facts/usagestats/compaction/data'
+            snapcreator.snapshots.input.path: '/mds/snapshots/usagestats/data'
+            snapcreator.output.path: '/mds/snapshots/usagestats/data'
+            snapcreator.meta.path: '/mds/snapshots/usagestats/meta'
+            snapshot.input.empty.success: true
+            whitelist.tenant.ids: ''
+            timezone: 'Europe/Berlin'
+            mapred.reduce.tasks: 10
+            parquet.compression: 'SNAPPY'
+  sla-check-user:
+    jobs:
+      azkaban-config-sla-check-user: '0.0.37'
+    configuration:
+      azkaban-config-sla-check-user:
+        files:
+          '/opt/azkaban-config-sla-check-user/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 1000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-user/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-user-batch-reading-fastcount:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-fastcount/sla-check-user-batch-reading.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-fastcount-run'
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-fastcount/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-batch-fastcount-results'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-fastcount/application.conf':
+              st_mode: 'batch-test'
+              st_requesttimeout: '4.seconds'
+              st_maxreadretries: 5
+              st_retryreadinterval: '15.seconds'
+              st_loglevel: 'INFO'
+              st_statsfile: 'logs/smoketestclientstats.dat'
+              rl_successpercentage: 95
+              rl_averagerequestduration: '1000.milliseconds'
+              ua_readsource: 'findUser'
+              fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+              data_tenantid: '99904'
+              data_deleteuseronexit: 'true'
+              usc_path: '/services/userevent'
+              upc_path: '/services/userprofilebatch'
+              stats_dumpinterval: '10.seconds'
+              stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-user-batch-reading-userprofile:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-userprofile/sla-check-user-batch-reading.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-userprofile-run'
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-userprofile/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-batch-userprofile-results'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-reading-userprofile/application.conf':
+            st_mode: 'batch-test'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 5
+            st_retryreadinterval: '15.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ua_readsource: 'userProfile'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            data_tenantid: '99903'
+            data_deleteuseronexit: 'true'
+            usc_path: '/services/userevent'
+            upc_path: '/services/userprofilebatch'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-user-batch-writing-fastcount:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-writing-fastcount/sla-check-run-batch-writing-fastcount.properties':
+            resultsFile: 'smoketestclientstats-batch-writing-fastcount.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-fastcount-run'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-writing-fastcount/application.conf':
+            st_mode: 'batch-store'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 5
+            st_retryreadinterval: '15.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-writing-fastcount.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ua_readsource: 'userProfile'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            data_tenantid: '99904'
+            data_deleteuseronexit: 'false'
+            usc_path: '/services/userevent'
+            upc_path: '/services/userprofilebatch'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-user-batch-writing-userprofile:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-writing-userprofile/sla-check-run-batch-writing-userprofile.properties':
+            resultsFile: 'smoketestclientstats-batch-writing-userprofile.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-userprofile-run'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-batch-writing-userprofile/application.conf':
+            st_mode: 'batch-store'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 5
+            st_retryreadinterval: '15.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-writing-userprofile.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ua_readsource: 'userProfile'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            data_tenantid: '99903'
+            data_deleteuseronexit: 'false'
+            usc_path: '/services/userevent'
+            upc_path: '/services/userprofilebatch'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-user-speed-fastcount:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-fastcount/sla-check-user-speed.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-fastcount-run'
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-fastcount/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-fastcount-results'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-fastcount/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 5
+            st_retryreadinterval: '15.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ua_readsource: 'findUser'
+            ua_b_filePeriod: '1.hour'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            ls_destination: 'http://os13dsapi01.muc.domeus.com:8094/process'
+            data_tenantid: '99902'
+            data_minuserid: 1001
+            data_maxuserid: 2000
+            data_deleteuseronexit: 'true'
+            usc_path: '/services/userevent'
+            upc_path: '/services/userprofile'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-user-speed-userprofile:
+        files:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-userprofile/sla-check-user-speed.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-userprofile-run'
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-userprofile/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-userprofile-results'
+        templates:
+          '/opt/azkaban-config-sla-check-user/sla-check-user-speed-userprofile/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 10
+            st_retryreadinterval: '60.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ua_readsource: 'userProfile'
+            ua_b_filePeriod: '1.hour'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            ls_destination: 'http://os13dsapi01.muc.domeus.com:8094/process'
+            data_tenantid: '99901'
+            data_minuserid: 1001
+            data_maxuserid: 2000
+            data_deleteuseronexit: 'true'
+            usc_path: '/services/userevent'
+            upc_path: '/services/userprofile'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+  sla-check-userresponse:
+    jobs:
+      azkaban-config-sla-check-userresponse: '0.0.10'
+    configuration:
+      azkaban-config-sla-check-userresponse:
+        files:
+          '/opt/azkaban-config-sla-check-userresponse/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 1000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-userresponse/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-userresponse-batch-reading:
+        files:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-batch-reading/sla-check-userresponse-batch-reading.properties':
+            resultsFile: 'smoketestclientstats-batch-reading-userresponse.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-userresponse-run'
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-batch-reading/upload-result-to-hdfs-userresponse-batch-reading.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-batch-userresponse-results'
+        templates:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-batch-reading/application.conf':
+            st_mode: 'batch-test'
+            st_requesttimeout: '2.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-reading-userresponse.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ur_tenantid: 99905
+            ur_deletemarkersonsuccess: 'true'
+            usc_path: '/services/userresponseevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-userresponse-batch-writing:
+        files:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-batch-writing/sla-check-userresponse-batch-writing.properties':
+            resultsFile: 'smoketestclientstats-batch-writing-userresponse.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-userresponse-run'
+        templates:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-batch-writing/application.conf':
+            st_mode: 'batch-store'
+            st_requesttimeout: '2.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-writing-userresponse.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ur_tenantid: 99905
+            ur_deletemarkersonsuccess: 'true'
+            usc_path: '/services/userresponseevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-userresponse-speed-fastcount:
+        files:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-speed-fastcount/sla-check-userresponse-speed-fastcount.properties':
+            resultsFile: 'smoketestclientstats-speed-fastcount-userresponse.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-userresponse-fastcount-run'
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-speed-fastcount/upload-result-to-hdfs-speed-fastcount.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-userresponse-fastcount-results'
+        templates:
+          '/opt/azkaban-config-sla-check-userresponse/sla-check-userresponse-speed-fastcount/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '25.seconds'
+            st_requestdelay: '20.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '10.seconds'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-speed-fastcount-userresponse.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            ur_tenantid: 99905
+            ur_deletemarkersonsuccess: 'true'
+            usc_path: '/services/userevent'
+            urc_path: '/services/userresponseevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+  sla-check-export:
+    jobs: 
+      azkaban-config-sla-check-export: '0.0.43'
+    configuration:
+      azkaban-config-sla-check-export:
+        files:
+          '/opt/azkaban-config-sla-check-export/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 5000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-export/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-export-store:
+        files:
+          '/opt/azkaban-config-sla-check-export/sla-check-export-store/sla-check-run-export-store.properties':
+            resultsFile: 'smoketestclientstats-export.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-export-run'
+        templates:
+          '/opt/azkaban-config-sla-check-export/sla-check-export-store/application.conf':
+            st_mode: 'export-store'
+            st_requesttimeout: '444.seconds'
+            st_maxreadretries: 6
+            st_retryreadinterval: '20.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '5000.milliseconds'
+            ex_tst_maxexportstatusreadretries: 60
+            ex_tst_exportstatusreadinterval: '30.seconds'
+            ur_deletemarkersonsuccess: 'true'
+            usc_path: '/services/userevent'
+            etl_secret: "%{alias('secrets::azkaban::projects::sla-check-export::sla-check-export-store::etl_secret')}"
+            etl_servicename: 'etl-server'
+            urc_path: '/services/userresponseevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-export-test:
+        files:
+          '/opt/azkaban-config-sla-check-export/sla-check-export-test/sla-check-export-test.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'localhost'
+            remoteWorkDir: '/tmp/smoketestclient-export-run'
+          '/opt/azkaban-config-sla-check-export/sla-check-export-test/sla-check-run-export-test.properties':
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+          '/opt/azkaban-config-sla-check-export/sla-check-export-test/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-export-results'
+        templates:
+          '/opt/azkaban-config-sla-check-export/sla-check-export-test/application.conf':
+            st_mode: 'export-test'
+            st_requesttimeout: '444.seconds'
+            st_maxreadretries: 6
+            st_retryreadinterval: '20.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '5000.milliseconds'
+            ex_tst_maxexportstatusreadretries: 60
+            ex_tst_exportstatusreadinterval: '30.seconds'
+            ur_deletemarkersonsuccess: 'true'
+            urc_path: '/services/userresponseevent'
+            etl_secret: "%{alias('secrets::azkaban::projects::sla-check-export::sla-check-export-test::etl_secret')}"
+            etl_servicename: 'etl-server'
+            usc_path: '/services/userevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+  sla-check-member:
+    jobs: 
+      azkaban-config-sla-check-member: '0.0.39'
+    configuration:
+      azkaban-config-sla-check-member:
+        files:
+          '/opt/azkaban-config-sla-check-member/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 1000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-member/check-if-sla-is-meet-member.properties':
+            maximumAverageDuration: 200
+            minimumSuccessPercentage: 95            
+          '/opt/azkaban-config-sla-check-member/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-member-speed-fastcount:
+        files:
+          '/opt/azkaban-config-sla-check-member/sla-check-member-speed-fastcount/sla-check-member-speed-fastcount.properties':
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+          '/opt/azkaban-config-sla-check-member/sla-check-member-speed-fastcount/sla-check-member-speed.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-member-fastcount-run'
+          '/opt/azkaban-config-sla-check-member/sla-check-member-speed-fastcount/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-member-fastcount-results'
+        templates:
+          '/opt/azkaban-config-sla-check-member/sla-check-member-speed-fastcount/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '3.seconds'
+            st_maxreadretries: 6
+            st_retryreadinterval: '20.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            fu_destination: 'http://os13dsapi01.muc.domeus.com:60022/selection/filteruser'
+            msc_path: '/services/membershipevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+  sla-check-relateddata:
+    jobs:
+      azkaban-config-sla-check-relateddata: '0.0.8'
+    configuration:
+      azkaban-config-sla-check-relateddata:
+        files:
+          '/opt/azkaban-config-sla-check-relateddata/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 1000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-relateddata/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-relateddata-batch-reading:
+        files:
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-batch-reading/sla-check-relateddata-batch-reading.properties':
+            resultsFile: 'smoketestclientstats-batch-reading-relateddata.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-relateddata-run'
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-batch-reading/upload-result-to-hdfs-relateddata-batch-reading.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-batch-relateddata-results'
+        templates:
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-batch-reading/application.conf':
+            st_mode: 'batch-test'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-reading-relateddata.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ls_destination: 'http://os13dsapi01.muc.domeus.com:8094/process'
+            rd_tenantid: 99902
+            rdr_client_path: '/services/relateddatareadbatch'
+            rds_client_path: '/services/relateddataevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-relateddata-speed:
+        files:
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-speed/sla-check-relateddata-speed.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-relateddata-run'
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-speed/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-relateddata-results'
+        templates:
+          '/opt/azkaban-config-sla-check-relateddata/sla-check-relateddata-speed/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '4.seconds'
+            st_maxreadretries: 30
+            st_retryreadinterval: '15.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            ls_destination: 'http://os13dsapi01.muc.domeus.com:8094/process'
+            rd_tenantid: 99901
+            rd_ls_destination: 'http://os13dsapi01.muc.domeus.com:8094/process'
+            rdr_client_path: '/services/relateddataread'
+            rds_client_path: '/services/relateddataevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'   
+  sla-check-statistics:
+    jobs:
+      azkaban-config-sla-check-statistics: '0.0.6'
+    configuration:
+      azkaban-config-sla-check-statistics:
+        files:
+          '/opt/azkaban-config-sla-check-statistics/check-if-sla-is-meet.properties':
+            maximumAverageDuration: 1000
+            minimumSuccessPercentage: 95
+          '/opt/azkaban-config-sla-check-statistics/cleanup.properties':
+            write_time: '4 hour ago'
+      sla-check-statistics-batch-reading:
+        files:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-batch-reading/sla-check-statistics-batch-reading.properties':
+            resultsFile: 'smoketestclientstats-batch-reading-statistics.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-statistics-run'
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-batch-reading/upload-result-to-hdfs-statistics-batch-reading.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-batch-statistics-results'
+        templates:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-batch-reading/application.conf':
+            st_mode: 'batch-test'
+            st_requesttimeout: '2.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-reading-statistics.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            st_d_tenantid: 99902
+            st_d_deletedataonsuccess: 'true'
+            urs_client_path: '/services/userresponseevent'
+            rds_client_path: '/services/relateddataevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-statistics-batch-writing:
+        files:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-batch-writing/sla-check-statistics-batch-writing.properties':
+            resultsFile: 'smoketestclientstats-batch-writing-statistics.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-batch-statistics-run'
+        templates:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-batch-writing/application.conf':
+            st_mode: 'batch-store'
+            st_requesttimeout: '2.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats-batch-writing-statistics.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            st_d_tenantid: 99902
+            st_d_deletedataonsuccess: 'true'
+            urs_client_path: '/services/userresponseevent'
+            rds_client_path: '/services/relateddataevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
+      sla-check-statistics-speed-hbase:
+        files:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-speed-hbase/sla-check-statistics-speed.properties':
+            resultsFile: 'smoketestclientstats.dat'
+            remoteHost: 'os13dsapi01-store.muc.domeus.com'
+            remoteWorkDir: '/tmp/smoketestclient-speed-statistics-run'
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-speed-hbase/upload-result-to-hdfs.properties':
+            hdfsResultsDir: '/monitoring/smoketestclient-speed-statistics-results'
+        templates:
+          '/opt/azkaban-config-sla-check-statistics/sla-check-statistics-speed-hbase/application.conf':
+            st_mode: 'speed'
+            st_requesttimeout: '2.seconds'
+            st_maxreadretries: 3
+            st_retryreadinterval: '7.second'
+            st_loglevel: 'INFO'
+            st_statsfile: 'logs/smoketestclientstats.dat'
+            rl_successpercentage: 95
+            rl_averagerequestduration: '1000.milliseconds'
+            st_d_tenantid: 99902
+            st_d_deletedataonsuccess: 'true'
+            urs_client_path: '/services/userresponseevent'
+            rds_client_path: '/services/relateddataevent'
+            stats_dumpinterval: '10.seconds'
+            stats_url: 'http://os13dsapi01.muc.domeus.com:8080/stats/collect'
